@@ -16,7 +16,7 @@ const groups = ref<TodoGroup[]>([
   {
     id: 1,
     name: 'My Tasks',
-    todos: [{ id: 1, title: 'Welcome to Todoi', completed: false }],
+    todos: [{ id: 1, title: 'Welcome to TODOey', completed: false }],
   },
 ])
 
