@@ -77,7 +77,7 @@ function handleDrop(toIndex: number) {
 </script>
 
 <template>
-  <main class="w-screen min-h-screen bg-gray-950 p-6 font-mono">
+  <main class="w-screen min-h-screen bg-gray-950 p-6">
     <div class="flex flex-wrap gap-4">
       <!-- Group Cards -->
       <div v-for="(group, index) in groups" :key="group.id"

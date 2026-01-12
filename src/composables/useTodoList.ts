@@ -16,15 +16,12 @@ const groups = ref<TodoGroup[]>([
   {
     id: 1,
     name: 'My Tasks',
-    todos: [
-      { id: 1, title: 'Welcome to todoi', completed: false },
-      { id: 2, title: 'Click anywhere to add a note', completed: false },
-    ],
+    todos: [{ id: 1, title: 'Welcome to Todoi', completed: false }],
   },
 ])
 
 let nextGroupId = 2
-let nextTodoId = 3
+let nextTodoId = 2
 
 export function useTodoList() {
   function addGroup(name: string) {
