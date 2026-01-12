@@ -3,47 +3,57 @@ import { ref, nextTick } from 'vue'
 import { useTodoList } from '@/composables/useTodoList'
 import { useTheme, type ThemeName } from '@/composables/useTheme'
 
-const { groups, addGroup, renameGroup, moveGroup, addTodo, removeTodo, toggleTodo } = useTodoList()
+const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, addTodo, removeTodo, toggleTodo } = useTodoList()
 const { theme, themeName, themeNames, themes, setTheme } = useTheme()
 
 const themeMenuOpen = ref(false)
 
-const editingGroupId = ref<number | null>(null)
+const editingNoteId = ref<number | null>(null)
 const editingName = ref('')
 const draggedIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
 
-function startEditingGroup(groupId: number, currentName: string) {
-  editingGroupId.value = groupId
+function startEditingNote(noteId: number, currentName: string) {
+  editingNoteId.value = noteId
   editingName.value = currentName
   nextTick(() => {
-    const input = document.querySelector(`[data-group-input="${groupId}"]`) as HTMLInputElement
+    const input = document.querySelector(`[data-note-input="${noteId}"]`) as HTMLInputElement
     input?.focus()
     input?.select()
   })
 }
 
-function saveGroupName(groupId: number) {
+function saveNoteName(noteId: number) {
   if (editingName.value.trim()) {
-    renameGroup(groupId, editingName.value.trim())
+    renameNote(noteId, editingName.value.trim())
   }
-  editingGroupId.value = null
+  editingNoteId.value = null
   editingName.value = ''
 }
 
-function handleAddTodo(groupId: number, event: Event) {
+function handleAddTodo(noteId: number, event: Event) {
   const input = event.target as HTMLInputElement
   if (!input.value.trim()) return
-  addTodo(groupId, input.value.trim())
+  addTodo(noteId, input.value.trim())
   input.value = ''
 }
 
-function handleAddGroup() {
-  addGroup('New Group')
+function handleAddTodoNote() {
+  addTodoNote('New List')
   nextTick(() => {
-    const newGroup = groups.value[groups.value.length - 1]
-    if (newGroup) {
-      startEditingGroup(newGroup.id, newGroup.name)
+    const newNote = notes.value[notes.value.length - 1]
+    if (newNote) {
+      startEditingNote(newNote.id, newNote.name)
+    }
+  })
+}
+
+function handleAddTextNote() {
+  addTextNote('New Note')
+  nextTick(() => {
+    const newNote = notes.value[notes.value.length - 1]
+    if (newNote) {
+      startEditingNote(newNote.id, newNote.name)
     }
   })
 }
@@ -73,7 +83,7 @@ function handleDragLeave() {
 
 function handleDrop(toIndex: number) {
   if (draggedIndex.value !== null && draggedIndex.value !== toIndex) {
-    moveGroup(draggedIndex.value, toIndex)
+    moveNote(draggedIndex.value, toIndex)
   }
   draggedIndex.value = null
   dragOverIndex.value = null
@@ -111,68 +121,93 @@ function handleDrop(toIndex: number) {
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-      <!-- Group Cards -->
-      <div v-for="(group, index) in groups" :key="group.id"
+      <!-- Note Cards -->
+      <div v-for="(note, index) in notes" :key="note.id"
         class="flex-1 min-w-[calc(25%-12px)] max-w-full border p-4 transition-colors" :style="{
           borderColor: dragOverIndex === index ? theme.lavender : theme.surface1,
           backgroundColor: theme.surface0,
           opacity: draggedIndex === index ? 0.5 : 1,
         }" draggable="true" @dragstart="handleDragStart(index)" @dragend="handleDragEnd" @dragover="handleDragOver"
         @dragenter="handleDragEnter(index)" @dragleave="handleDragLeave" @drop="handleDrop(index)">
-        <!-- Group Name -->
+        <!-- Note Name -->
         <div class="mb-2">
-          <input v-if="editingGroupId === group.id" v-model="editingName" :data-group-input="group.id"
+          <input v-if="editingNoteId === note.id" v-model="editingName" :data-note-input="note.id"
             class="w-full bg-transparent outline-none border-b"
-            :style="{ color: theme.lavender, borderColor: theme.lavender }" @blur="saveGroupName(group.id)"
-            @keydown.enter="saveGroupName(group.id)" @keydown.escape="editingGroupId = null" />
+            :style="{ color: theme.lavender, borderColor: theme.lavender }" @blur="saveNoteName(note.id)"
+            @keydown.enter="saveNoteName(note.id)" @keydown.escape="editingNoteId = null" />
           <span v-else class="cursor-pointer" :style="{ color: theme.lavender }"
-            @click="startEditingGroup(group.id, group.name)">
-            > {{ group.name }}_
+            @click="startEditingNote(note.id, note.name)">
+            > {{ note.name }}_
           </span>
         </div>
 
         <!-- Separator -->
         <div class="border-b mb-3" :style="{ borderColor: theme.surface1 }"></div>
 
-        <!-- Todos -->
-        <div class="space-y-1">
-          <div v-for="todo in group.todos" :key="todo.id"
-            class="group flex items-center gap-2 px-1 -mx-1 transition-colors" :style="{ '--hover-bg': theme.surface1 }"
-            @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface1"
-            @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'">
-            <span class="cursor-pointer select-none" :style="{ color: todo.completed ? theme.surface2 : theme.green }"
-              @click="toggleTodo(group.id, todo.id)">
-              [{{ todo.completed ? 'x' : ' ' }}]
-            </span>
-            <span class="flex-1 cursor-pointer" :class="{ 'line-through': todo.completed }"
-              :style="{ color: todo.completed ? theme.surface2 : theme.text }" @click="toggleTodo(group.id, todo.id)">
-              {{ todo.title }}
-            </span>
-            <button class="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-              :style="{ color: theme.overlay0 }" @click="removeTodo(group.id, todo.id)"
-              @mouseenter="($event.target as HTMLElement).style.color = theme.red"
-              @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
-              [x]
-            </button>
+        <!-- Todo List Content -->
+        <template v-if="note.type === 'todo'">
+          <div class="space-y-1">
+            <div v-for="todo in note.todos" :key="todo.id"
+              class="group flex items-center gap-2 px-1 -mx-1 transition-colors" :style="{ '--hover-bg': theme.surface1 }"
+              @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface1"
+              @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'">
+              <span class="cursor-pointer select-none" :style="{ color: todo.completed ? theme.surface2 : theme.green }"
+                @click="toggleTodo(note.id, todo.id)">
+                [{{ todo.completed ? 'x' : ' ' }}]
+              </span>
+              <span class="flex-1 cursor-pointer" :class="{ 'line-through': todo.completed }"
+                :style="{ color: todo.completed ? theme.surface2 : theme.text }" @click="toggleTodo(note.id, todo.id)">
+                {{ todo.title }}
+              </span>
+              <button class="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                :style="{ color: theme.overlay0 }" @click="removeTodo(note.id, todo.id)"
+                @mouseenter="($event.target as HTMLElement).style.color = theme.red"
+                @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
+                [x]
+              </button>
+            </div>
           </div>
-        </div>
 
-        <!-- Add Todo Input -->
-        <div class="mt-3">
-          <input type="text" placeholder="> Add todo..." class="w-full bg-transparent outline-none text-sm"
-            :style="{ color: theme.overlay0 }" @keydown.enter="handleAddTodo(group.id, $event)"
-            @focus="($event.target as HTMLElement).style.color = theme.text"
-            @blur="($event.target as HTMLElement).style.color = theme.overlay0" />
-        </div>
+          <!-- Add Todo Input -->
+          <div class="mt-3">
+            <input type="text" placeholder="> Add todo..." class="w-full bg-transparent outline-none text-sm"
+              :style="{ color: theme.overlay0 }" @keydown.enter="handleAddTodo(note.id, $event)"
+              @focus="($event.target as HTMLElement).style.color = theme.text"
+              @blur="($event.target as HTMLElement).style.color = theme.overlay0" />
+          </div>
+        </template>
+
+        <!-- Text Note Content -->
+        <template v-else>
+          <textarea
+            :value="note.content"
+            @input="updateTextContent(note.id, ($event.target as HTMLTextAreaElement).value)"
+            placeholder="Write your note..."
+            class="w-full bg-transparent outline-none resize-none min-h-[100px] text-sm"
+            :style="{ color: theme.text }"
+          ></textarea>
+        </template>
       </div>
 
-      <!-- Add Group Card -->
-      <div
-        class="flex-1 min-w-[calc(25%-12px)] max-w-full border border-dashed p-4 flex items-center justify-center cursor-pointer transition-colors"
-        :style="{ borderColor: theme.surface1, color: theme.overlay0 }" @click="handleAddGroup"
-        @mouseenter="($event.currentTarget as HTMLElement).style.borderColor = theme.lavender; ($event.currentTarget as HTMLElement).style.color = theme.lavender"
-        @mouseleave="($event.currentTarget as HTMLElement).style.borderColor = theme.surface1; ($event.currentTarget as HTMLElement).style.color = theme.overlay0">
-        + New Group
+      <!-- Add Note Buttons -->
+      <div class="flex-1 min-w-[calc(25%-12px)] max-w-full border border-dashed p-4 flex flex-col items-center justify-center gap-2 transition-colors"
+        :style="{ borderColor: theme.surface1 }">
+        <button
+          class="cursor-pointer transition-colors"
+          :style="{ color: theme.overlay0 }"
+          @click="handleAddTodoNote"
+          @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
+          @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
+          + New List
+        </button>
+        <button
+          class="cursor-pointer transition-colors"
+          :style="{ color: theme.overlay0 }"
+          @click="handleAddTextNote"
+          @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
+          @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
+          + New Note
+        </button>
       </div>
     </div>
   </main>
