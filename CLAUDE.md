@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Todoi is a Vue 3 + TypeScript single-page application using the Composition API with `<script setup>` syntax. Built with Vite 7, styled with Tailwind CSS v4, and uses Rust-powered linting/formatting tools (Oxlint/Oxfmt).
+Doto is a Vue 3 + TypeScript single-page application using the Composition API with `<script setup>` syntax. Built with Vite 7, styled with Tailwind CSS v4, and uses Rust-powered linting/formatting tools (Oxlint/Oxfmt).
 
 ## Commands
 
