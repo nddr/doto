@@ -6,38 +6,87 @@ export interface Todo {
   completed: boolean
 }
 
-const todos = ref<Todo[]>([
-  { id: 1, title: 'Welcome to todoi', completed: false },
-  { id: 2, title: 'Click anywhere to add a note', completed: false },
+export interface TodoGroup {
+  id: number
+  name: string
+  todos: Todo[]
+}
+
+const groups = ref<TodoGroup[]>([
+  {
+    id: 1,
+    name: 'My Tasks',
+    todos: [
+      { id: 1, title: 'Welcome to todoi', completed: false },
+      { id: 2, title: 'Click anywhere to add a note', completed: false },
+    ],
+  },
 ])
 
-let nextId = 3
+let nextGroupId = 2
+let nextTodoId = 3
 
 export function useTodoList() {
-  function addTodo(title: string) {
-    todos.value.push({
-      id: nextId++,
-      title,
-      completed: false,
+  function addGroup(name: string) {
+    groups.value.push({
+      id: nextGroupId++,
+      name,
+      todos: [],
     })
   }
 
-  function removeTodo(id: number) {
-    const index = todos.value.findIndex((todo) => todo.id === id)
-    if (index !== -1) {
-      todos.value.splice(index, 1)
+  function renameGroup(groupId: number, name: string) {
+    const group = groups.value.find((g) => g.id === groupId)
+    if (group) {
+      group.name = name
     }
   }
 
-  function toggleTodo(id: number) {
-    const todo = todos.value.find((todo) => todo.id === id)
-    if (todo) {
-      todo.completed = !todo.completed
+  function moveGroup(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex) return
+    if (fromIndex < 0 || fromIndex >= groups.value.length) return
+    if (toIndex < 0 || toIndex >= groups.value.length) return
+    const removed = groups.value[fromIndex]!
+    groups.value.splice(fromIndex, 1)
+    groups.value.splice(toIndex, 0, removed)
+  }
+
+  function addTodo(groupId: number, title: string) {
+    const group = groups.value.find((g) => g.id === groupId)
+    if (group) {
+      group.todos.push({
+        id: nextTodoId++,
+        title,
+        completed: false,
+      })
+    }
+  }
+
+  function removeTodo(groupId: number, todoId: number) {
+    const group = groups.value.find((g) => g.id === groupId)
+    if (group) {
+      const index = group.todos.findIndex((todo) => todo.id === todoId)
+      if (index !== -1) {
+        group.todos.splice(index, 1)
+      }
+    }
+  }
+
+  function toggleTodo(groupId: number, todoId: number) {
+    const group = groups.value.find((g) => g.id === groupId)
+    if (group) {
+      const todo = group.todos.find((t) => t.id === todoId)
+      if (todo) {
+        todo.completed = !todo.completed
+      }
     }
   }
 
   return {
-    todos,
+    groups,
+    addGroup,
+    renameGroup,
+    moveGroup,
     addTodo,
     removeTodo,
     toggleTodo,

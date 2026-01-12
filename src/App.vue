@@ -1,86 +1,141 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useTodoList } from '@/composables/useTodoList'
 
-const { todos, addTodo, removeTodo, toggleTodo } = useTodoList()
+const { groups, addGroup, renameGroup, moveGroup, addTodo, removeTodo, toggleTodo } = useTodoList()
 
-const textarea = useTemplateRef<HTMLTextAreaElement>('textarea')
+const editingGroupId = ref<number | null>(null)
+const editingName = ref('')
+const draggedIndex = ref<number | null>(null)
+const dragOverIndex = ref<number | null>(null)
 
-const modalOpen = ref(false)
-const selectedNote = ref<Record<string, any> | null>(null)
-
-function handleSave() {
-  if (!textarea.value?.value.trim()) return
-
-  addTodo(textarea.value.value.trim())
-  textarea.value.value = ''
+function startEditingGroup(groupId: number, currentName: string) {
+  editingGroupId.value = groupId
+  editingName.value = currentName
+  nextTick(() => {
+    const input = document.querySelector(`[data-group-input="${groupId}"]`) as HTMLInputElement
+    input?.focus()
+    input?.select()
+  })
 }
 
-function closeModal() {
-  modalOpen.value = false
+function saveGroupName(groupId: number) {
+  if (editingName.value.trim()) {
+    renameGroup(groupId, editingName.value.trim())
+  }
+  editingGroupId.value = null
+  editingName.value = ''
+}
+
+function handleAddTodo(groupId: number, event: Event) {
+  const input = event.target as HTMLInputElement
+  if (!input.value.trim()) return
+  addTodo(groupId, input.value.trim())
+  input.value = ''
+}
+
+function handleAddGroup() {
+  addGroup('New Group')
+  nextTick(() => {
+    const newGroup = groups.value[groups.value.length - 1]
+    if (newGroup) {
+      startEditingGroup(newGroup.id, newGroup.name)
+    }
+  })
+}
+
+function handleDragStart(index: number) {
+  draggedIndex.value = index
+}
+
+function handleDragEnd() {
+  draggedIndex.value = null
+  dragOverIndex.value = null
+}
+
+function handleDragOver(event: DragEvent) {
+  event.preventDefault()
+}
+
+function handleDragEnter(index: number) {
+  if (draggedIndex.value !== null && draggedIndex.value !== index) {
+    dragOverIndex.value = index
+  }
+}
+
+function handleDragLeave() {
+  dragOverIndex.value = null
+}
+
+function handleDrop(toIndex: number) {
+  if (draggedIndex.value !== null && draggedIndex.value !== toIndex) {
+    moveGroup(draggedIndex.value, toIndex)
+  }
+  draggedIndex.value = null
+  dragOverIndex.value = null
 }
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 w-full h-12 py-8 px-12 text-black z-10">
-    <h1 class="text-3xl">todoi</h1>
-  </header>
+  <main class="w-screen min-h-screen bg-gray-950 p-6 font-mono">
+    <div class="flex flex-wrap gap-4">
+      <!-- Group Cards -->
+      <div v-for="(group, index) in groups" :key="group.id"
+        class="flex-1 min-w-[calc(25%-12px)] max-w-full border border-gray-700 p-4 bg-gray-900 transition-colors"
+        :class="{
+          'opacity-50': draggedIndex === index,
+          'border-green-400': dragOverIndex === index,
+        }" draggable="true" @dragstart="handleDragStart(index)" @dragend="handleDragEnd" @dragover="handleDragOver"
+        @dragenter="handleDragEnter(index)" @dragleave="handleDragLeave" @drop="handleDrop(index)">
+        <!-- Group Name -->
+        <div class="mb-2">
+          <input v-if="editingGroupId === group.id" v-model="editingName" :data-group-input="group.id"
+            class="w-full bg-transparent text-green-400 outline-none border-b border-green-400"
+            @blur="saveGroupName(group.id)" @keydown.enter="saveGroupName(group.id)"
+            @keydown.escape="editingGroupId = null" />
+          <span v-else class="text-green-400 cursor-pointer hover:text-green-300"
+            @click="startEditingGroup(group.id, group.name)">
+            > {{ group.name }}_
+          </span>
+        </div>
 
-  <main class="relative w-screen h-screen bg-amber-50">
-    <div ref="todoList" class="absolute top-24 left-1/2 -translate-x-1/2 space-y-2">
-      <div v-for="todo in todos" :key="todo.id"
-        class="group flex items-center gap-4 p-2 rounded-lg hover:bg-amber-100/50 transition-colors">
-        <button class="relative w-7 h-7 border-[3px] border-amber-950 rounded-md shrink-0 cursor-pointer bg-white"
-          @click="toggleTodo(todo.id)">
-          <svg class="absolute inset-0 w-full h-full p-0.5 transition-all duration-300 ease-out"
-            :class="todo.completed ? 'opacity-100 scale-100' : 'opacity-0 scale-50'" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 12.5L9 17.5L20 6.5" class="check-path" :class="{ 'animate-check': todo.completed }" />
-          </svg>
-        </button>
+        <!-- Separator -->
+        <div class="border-b border-gray-700 mb-3"></div>
 
-        <span class="text-4xl transition-all duration-300 cursor-pointer"
-          :class="todo.completed ? 'line-through text-gray-400' : 'text-amber-950'"
-          @click="toggleTodo(todo.id)">
-          {{ todo.title }}
-        </span>
+        <!-- Todos -->
+        <div class="space-y-1">
+          <div v-for="todo in group.todos" :key="todo.id"
+            class="group flex items-center gap-2 hover:bg-gray-800 px-1 -mx-1">
+            <span class="cursor-pointer select-none" :class="todo.completed ? 'text-gray-600' : 'text-green-400'"
+              @click="toggleTodo(group.id, todo.id)">
+              [{{ todo.completed ? 'x' : ' ' }}]
+            </span>
+            <span class="flex-1 cursor-pointer" :class="todo.completed ? 'text-gray-600 line-through' : 'text-gray-300'"
+              @click="toggleTodo(group.id, todo.id)">
+              {{ todo.title }}
+            </span>
+            <button
+              class="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              @click="removeTodo(group.id, todo.id)">
+              [x]
+            </button>
+          </div>
+        </div>
 
-        <button
-          class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-red-500 hover:text-red-700 cursor-pointer px-2 py-1"
-          @click="removeTodo(todo.id)">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 6l12 12M6 18L18 6" stroke-linecap="round" />
-          </svg>
-        </button>
+        <!-- Add Todo Input -->
+        <div class="mt-3">
+          <input type="text" placeholder="> Add todo..."
+            class="w-full bg-transparent text-gray-500 placeholder-gray-600 outline-none text-sm focus:text-green-400 focus:placeholder-gray-700"
+            @keydown.enter="handleAddTodo(group.id, $event)" />
+        </div>
       </div>
 
-      <div class="p-2">
-        <textarea @keydown.enter.exact.prevent="handleSave" ref="textarea" placeholder="Add a todo..."
-          class="w-full ml-10 text-2xl outline-none resize-none overflow-hidden field-sizing-content bg-transparent"></textarea>
+      <!-- Add Group Card -->
+      <div
+        class="flex-1 min-w-[calc(25%-12px)] max-w-full border border-dashed border-gray-700 p-4 flex items-center justify-center cursor-pointer hover:border-green-400 hover:text-green-400 text-gray-600 transition-colors"
+        @click="handleAddGroup">
+        + New Group
       </div>
     </div>
   </main>
-
-  <!-- Note Modal with light-dismiss -->
-  <Teleport to="body">
-    <div v-if="modalOpen" class="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
-      @click.self="closeModal">
-      <div class="bg-white rounded-xl shadow-lg p-6 w-96 min-h-48 max-w-[90vw]">
-        <p class="text-lg">{{ selectedNote?.text }}</p>
-        <button @click="closeModal" class="mt-4 bg-amber-200 px-3 py-1 rounded cursor-pointer">Save</button>
-      </div>
-    </div>
-  </Teleport>
 </template>
-
-<style scoped>
-.check-path {
-  stroke-dasharray: 30;
-  stroke-dashoffset: 30;
-  transition: stroke-dashoffset 0.3s ease-out;
-}
-
-.animate-check {
-  stroke-dashoffset: 0;
-}
-</style>
