@@ -3,7 +3,7 @@ import { ref, nextTick } from 'vue'
 import { useTodoList } from '@/composables/useTodoList'
 import { useTheme, type ThemeName } from '@/composables/useTheme'
 
-const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, addTodo, removeTodo, toggleTodo } = useTodoList()
+const { notes, addTodoNote, addTextNote, renameNote, moveNote, updateTextContent, addTodo, removeTodo, toggleTodo } = useTodoList()
 const { theme, themeName, themeNames, themes, setTheme } = useTheme()
 
 const themeMenuOpen = ref(false)
@@ -124,7 +124,7 @@ function handleDrop(toIndex: number) {
       <!-- Note Cards -->
       <div v-for="(note, index) in notes" :key="note.id"
         class="flex-1 min-w-[calc(25%-12px)] max-w-full border p-4 transition-colors" :style="{
-          borderColor: dragOverIndex === index ? theme.lavender : theme.surface1,
+          borderColor: draggedIndex === index ? 'white' : (dragOverIndex === index ? theme.lavender : theme.surface1),
           backgroundColor: theme.surface0,
           opacity: draggedIndex === index ? 0.5 : 1,
         }" draggable="true" @dragstart="handleDragStart(index)" @dragend="handleDragEnd" @dragover="handleDragOver"
@@ -148,7 +148,8 @@ function handleDrop(toIndex: number) {
         <template v-if="note.type === 'todo'">
           <div class="space-y-1">
             <div v-for="todo in note.todos" :key="todo.id"
-              class="group flex items-center gap-2 px-1 -mx-1 transition-colors" :style="{ '--hover-bg': theme.surface1 }"
+              class="group flex items-center gap-2 px-1 -mx-1 transition-colors"
+              :style="{ '--hover-bg': theme.surface1 }"
               @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface1"
               @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'">
               <span class="cursor-pointer select-none" :style="{ color: todo.completed ? theme.surface2 : theme.green }"
@@ -179,31 +180,23 @@ function handleDrop(toIndex: number) {
 
         <!-- Text Note Content -->
         <template v-else>
-          <textarea
-            :value="note.content"
+          <textarea :value="note.content"
             @input="updateTextContent(note.id, ($event.target as HTMLTextAreaElement).value)"
-            placeholder="Write your note..."
-            class="w-full bg-transparent outline-none resize-none min-h-[100px] text-sm"
-            :style="{ color: theme.text }"
-          ></textarea>
+            placeholder="Write your note..." class="w-full bg-transparent outline-none resize-none min-h-25 text-sm"
+            :style="{ color: theme.text }"></textarea>
         </template>
       </div>
 
       <!-- Add Note Buttons -->
-      <div class="flex-1 min-w-[calc(25%-12px)] max-w-full border border-dashed p-4 flex flex-col items-center justify-center gap-2 transition-colors"
+      <div
+        class="flex-1 min-w-[calc(25%-12px)] max-w-full border border-dashed p-4 flex flex-col items-center justify-center gap-2 transition-colors"
         :style="{ borderColor: theme.surface1 }">
-        <button
-          class="cursor-pointer transition-colors"
-          :style="{ color: theme.overlay0 }"
-          @click="handleAddTodoNote"
+        <button class="cursor-pointer transition-colors" :style="{ color: theme.overlay0 }" @click="handleAddTodoNote"
           @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
           @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
           + New List
         </button>
-        <button
-          class="cursor-pointer transition-colors"
-          :style="{ color: theme.overlay0 }"
-          @click="handleAddTextNote"
+        <button class="cursor-pointer transition-colors" :style="{ color: theme.overlay0 }" @click="handleAddTextNote"
           @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
           @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
           + New Note
