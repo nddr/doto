@@ -139,10 +139,8 @@ function handleDrop(toIndex: number) {
             @click="startEditingNote(note.id, note.name)">
             > {{ note.name }}_
           </span>
-          <button v-if="editingNoteId !== note.id"
-            class="cursor-pointer ml-2"
-            :style="{ color: theme.overlay0 }" @click="removeNote(note.id)"
-            @mouseenter="($event.target as HTMLElement).style.color = theme.red"
+          <button v-if="editingNoteId !== note.id" class="cursor-pointer ml-2" :style="{ color: theme.overlay0 }"
+            @click="removeNote(note.id)" @mouseenter="($event.target as HTMLElement).style.color = theme.red"
             @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
             [x]
           </button>
@@ -167,8 +165,7 @@ function handleDrop(toIndex: number) {
                 :style="{ color: todo.completed ? theme.surface2 : theme.text }" @click="toggleTodo(note.id, todo.id)">
                 {{ todo.title }}
               </span>
-              <button class="cursor-pointer"
-                :style="{ color: theme.overlay0 }" @click="removeTodo(note.id, todo.id)"
+              <button class="cursor-pointer" :style="{ color: theme.overlay0 }" @click="removeTodo(note.id, todo.id)"
                 @mouseenter="($event.target as HTMLElement).style.color = theme.red"
                 @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
                 [x]
@@ -189,8 +186,12 @@ function handleDrop(toIndex: number) {
         <template v-else>
           <textarea :value="note.content"
             @input="updateTextContent(note.id, ($event.target as HTMLTextAreaElement).value)"
-            placeholder="Write your note..." class="w-full bg-transparent outline-none resize-none min-h-25 text-sm"
-            :style="{ color: theme.text }"></textarea>
+            placeholder="Write your note..." class="w-full bg-transparent outline-none resize-none min-h-25 text-sm scrollbar-none"
+            :style="{
+              color: theme.text,
+              backgroundImage: 'repeating-linear-gradient(transparent, transparent 1.4em, rgba(255, 255, 255, 0.05) 1.4em, rgba(255, 255, 255, 0.05) calc(1.4em + 1px))',
+              lineHeight: '1.4em',
+            }"></textarea>
         </template>
       </div>
 
