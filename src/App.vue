@@ -3,7 +3,7 @@ import { ref, nextTick } from 'vue'
 import { useTodoList } from '@/composables/useTodoList'
 import { useTheme, type ThemeName } from '@/composables/useTheme'
 
-const { notes, addTodoNote, addTextNote, renameNote, moveNote, updateTextContent, addTodo, removeTodo, toggleTodo } = useTodoList()
+const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, addTodo, removeTodo, toggleTodo } = useTodoList()
 const { theme, themeName, themeNames, themes, setTheme } = useTheme()
 
 const themeMenuOpen = ref(false)
@@ -130,7 +130,7 @@ function handleDrop(toIndex: number) {
         }" draggable="true" @dragstart="handleDragStart(index)" @dragend="handleDragEnd" @dragover="handleDragOver"
         @dragenter="handleDragEnter(index)" @dragleave="handleDragLeave" @drop="handleDrop(index)">
         <!-- Note Name -->
-        <div class="mb-2">
+        <div class="mb-2 flex items-center justify-between group/header">
           <input v-if="editingNoteId === note.id" v-model="editingName" :data-note-input="note.id"
             class="w-full bg-transparent outline-none border-b"
             :style="{ color: theme.lavender, borderColor: theme.lavender }" @blur="saveNoteName(note.id)"
@@ -139,6 +139,13 @@ function handleDrop(toIndex: number) {
             @click="startEditingNote(note.id, note.name)">
             > {{ note.name }}_
           </span>
+          <button v-if="editingNoteId !== note.id"
+            class="cursor-pointer ml-2"
+            :style="{ color: theme.overlay0 }" @click="removeNote(note.id)"
+            @mouseenter="($event.target as HTMLElement).style.color = theme.red"
+            @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
+            [x]
+          </button>
         </div>
 
         <!-- Separator -->
@@ -160,7 +167,7 @@ function handleDrop(toIndex: number) {
                 :style="{ color: todo.completed ? theme.surface2 : theme.text }" @click="toggleTodo(note.id, todo.id)">
                 {{ todo.title }}
               </span>
-              <button class="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              <button class="cursor-pointer"
                 :style="{ color: theme.overlay0 }" @click="removeTodo(note.id, todo.id)"
                 @mouseenter="($event.target as HTMLElement).style.color = theme.red"
                 @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
