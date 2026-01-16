@@ -22,7 +22,7 @@ export interface TextNote {
 
 export type Note = TodoNote | TextNote
 
-const STORAGE_KEY = 'doto-notes'
+const STORAGE_KEY = 'oe-notes'
 
 function loadFromStorage(): Note[] {
   const stored = localStorage.getItem(STORAGE_KEY)
@@ -38,7 +38,7 @@ function loadFromStorage(): Note[] {
       type: 'todo',
       id: 1,
       name: 'My Tasks',
-      todos: [{ id: 1, title: 'Welcome to Doto', completed: false }],
+      todos: [{ id: 1, title: 'Make your bed', completed: false }],
     },
   ]
 }
