@@ -91,10 +91,10 @@ function handleDrop(toIndex: number) {
 </script>
 
 <template>
-  <main class="w-screen min-h-screen p-6 font-mono transition-colors duration-200"
+  <main class="w-screen min-h-screen p-6 pt-16 font-mono transition-colors duration-200"
     :style="{ backgroundColor: theme.base }">
     <!-- Theme Switcher -->
-    <div class="fixed top-4 right-4 z-10">
+    <div class="fixed top-4 right-6 z-10">
       <div class="relative">
         <button class="px-3 py-1 border cursor-pointer transition-colors" :style="{
           borderColor: theme.surface1,
@@ -178,7 +178,7 @@ function handleDrop(toIndex: number) {
             <input type="text" placeholder="> Add todo..." class="w-full bg-transparent outline-none text-sm"
               :style="{ color: theme.overlay0 }" @keydown.enter="handleAddTodo(note.id, $event)"
               @focus="($event.target as HTMLElement).style.color = theme.text"
-              @blur="($event.target as HTMLElement).style.color = theme.overlay0" />
+              @blur="handleAddTodo(note.id, $event); ($event.target as HTMLElement).style.color = theme.overlay0" />
           </div>
         </template>
 
@@ -186,8 +186,8 @@ function handleDrop(toIndex: number) {
         <template v-else>
           <textarea :value="note.content"
             @input="updateTextContent(note.id, ($event.target as HTMLTextAreaElement).value)"
-            placeholder="Write your note..." class="w-full bg-transparent outline-none resize-none min-h-25 text-sm scrollbar-none"
-            :style="{
+            placeholder="Write your note..."
+            class="w-full bg-transparent outline-none resize-none min-h-25 text-sm scrollbar-none" :style="{
               color: theme.text,
               backgroundImage: 'repeating-linear-gradient(transparent, transparent 1.4em, rgba(255, 255, 255, 0.05) 1.4em, rgba(255, 255, 255, 0.05) calc(1.4em + 1px))',
               lineHeight: '1.4em',
