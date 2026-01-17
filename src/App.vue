@@ -133,13 +133,21 @@ function handleDrop(toIndex: number) {
         <div class="mb-2 flex items-center justify-between group/header">
           <input v-if="editingNoteId === note.id" v-model="editingName" :data-note-input="note.id"
             class="w-full bg-transparent outline-none border-b"
-            :style="{ color: theme.lavender, borderColor: theme.lavender }" @blur="saveNoteName(note.id)"
+            :style="{ color: theme.lavender, borderColor: theme.lavender }"
+            :aria-label="`Edit name for ${note.name}`"
+            @blur="saveNoteName(note.id)"
             @keydown.enter="saveNoteName(note.id)" @keydown.escape="editingNoteId = null" />
           <span v-else class="cursor-pointer" :style="{ color: theme.lavender }"
-            @click="startEditingNote(note.id, note.name)">
+            tabindex="0"
+            role="button"
+            :aria-label="`Edit ${note.name}`"
+            @click="startEditingNote(note.id, note.name)"
+            @keydown.enter="startEditingNote(note.id, note.name)"
+            @keydown.space.prevent="startEditingNote(note.id, note.name)">
             > {{ note.name }}_
           </span>
           <button v-if="editingNoteId !== note.id" class="cursor-pointer ml-2" :style="{ color: theme.overlay0 }"
+            :aria-label="`Delete ${note.name}`"
             @click="removeNote(note.id)" @mouseenter="($event.target as HTMLElement).style.color = theme.red"
             @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
             [x]
