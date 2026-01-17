@@ -117,17 +117,20 @@ onUnmounted(() => {
   <main class="w-screen min-h-screen p-6 pt-16 text-lg font-mono transition-colors duration-200"
     :style="{ backgroundColor: theme.base }">
     <!-- Theme Switcher -->
-    <button popovertarget="theme-menu" class="fixed top-4 right-6 z-10 px-3 py-1 border cursor-pointer transition-colors" style="anchor-name: --theme-btn" :style="{
-      borderColor: theme.surface1,
-      backgroundColor: theme.surface0,
-      color: theme.text,
-    }">
+    <button popovertarget="theme-menu"
+      class="fixed top-4 right-6 z-10 px-3 py-1 border cursor-pointer transition-colors"
+      style="anchor-name: --theme-btn" :style="{
+        borderColor: theme.surface1,
+        backgroundColor: theme.surface0,
+        color: theme.text,
+      }">
       [ {{ theme.name }} ]
     </button>
-    <div id="theme-menu" popover class="m-0 p-0 border" style="position-anchor: --theme-btn; inset: unset; top: anchor(bottom); right: anchor(right)" :style="{
-      borderColor: theme.surface1,
-      backgroundColor: theme.surface0,
-    }">
+    <div id="theme-menu" popover class="m-0 p-0 border"
+      style="position-anchor: --theme-btn; inset: unset; top: anchor(bottom); right: anchor(right)" :style="{
+        borderColor: theme.surface1,
+        backgroundColor: theme.surface0,
+      }">
       <button v-for="name in themeNames" :key="name" popovertarget="theme-menu"
         class="block w-full px-3 py-1 text-left cursor-pointer transition-colors" :style="{
           color: themeName === name ? theme.lavender : theme.text,
@@ -142,7 +145,7 @@ onUnmounted(() => {
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <!-- Note Cards -->
       <div v-for="(note, index) in notes" :key="note.id"
-        class="flex-1 min-w-[calc(25%-12px)] max-w-full border p-6 transition-colors" :style="{
+        class="flex-1 min-w-[calc(25%-12px)] max-w-full border p-6 transition-colors flex flex-col" :style="{
           borderColor: draggedIndex === index ? 'white' : (dragOverIndex === index ? theme.lavender : theme.surface1),
           backgroundColor: theme.surface0,
           opacity: draggedIndex === index ? 0.5 : 1,
@@ -152,22 +155,18 @@ onUnmounted(() => {
         <div class="mb-2 flex items-center justify-between group/header">
           <input v-if="editingNoteId === note.id" v-model="editingName" :data-note-input="note.id"
             class="w-full bg-transparent outline-none border-b"
-            :style="{ color: theme.lavender, borderColor: theme.lavender }"
-            :aria-label="`Edit name for ${note.name}`"
-            @blur="saveNoteName(note.id)"
-            @keydown.enter="saveNoteName(note.id)" @keydown.escape="editingNoteId = null" />
-          <span v-else class="cursor-pointer" :style="{ color: theme.lavender }"
-            tabindex="0"
-            role="button"
-            :aria-label="`Edit ${note.name}`"
-            @click="startEditingNote(note.id, note.name)"
+            :style="{ color: theme.lavender, borderColor: theme.lavender }" :aria-label="`Edit name for ${note.name}`"
+            @blur="saveNoteName(note.id)" @keydown.enter="saveNoteName(note.id)"
+            @keydown.escape="editingNoteId = null" />
+          <span v-else class="cursor-pointer" :style="{ color: theme.lavender }" tabindex="0" role="button"
+            :aria-label="`Edit ${note.name}`" @click="startEditingNote(note.id, note.name)"
             @keydown.enter="startEditingNote(note.id, note.name)"
             @keydown.space.prevent="startEditingNote(note.id, note.name)">
             > {{ note.name }}_
           </span>
           <button v-if="editingNoteId !== note.id" class="cursor-pointer ml-2" :style="{ color: theme.overlay0 }"
-            :aria-label="`Delete ${note.name}`"
-            @click="removeNote(note.id)" @mouseenter="($event.target as HTMLElement).style.color = theme.red"
+            :aria-label="`Delete ${note.name}`" @click="removeNote(note.id)"
+            @mouseenter="($event.target as HTMLElement).style.color = theme.red"
             @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
             [x]
           </button>
@@ -210,16 +209,16 @@ onUnmounted(() => {
         </template>
 
         <!-- Text Note Content -->
-        <template v-else>
+        <div v-else class="flex-1 min-h-25">
           <textarea :value="note.content"
             @input="updateTextContent(note.id, ($event.target as HTMLTextAreaElement).value)"
             placeholder="Write your note..."
-            class="w-full bg-transparent outline-none resize-none min-h-25 scrollbar-none" :style="{
+            class="w-full h-full bg-transparent outline-none resize-none scrollbar-none" :style="{
               color: theme.text,
               backgroundImage: 'repeating-linear-gradient(transparent, transparent 1.4em, rgba(255, 255, 255, 0.05) 1.4em, rgba(255, 255, 255, 0.05) calc(1.4em + 1px))',
               lineHeight: '1.4em',
             }"></textarea>
-        </template>
+        </div>
       </div>
 
       <!-- Add Note Buttons -->
