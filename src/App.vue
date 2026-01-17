@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import { useTodoList } from '@/composables/useTodoList'
 import { useTheme, type ThemeName } from '@/composables/useTheme'
 
 const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, addTodo, removeTodo, toggleTodo } = useTodoList()
 const { theme, themeName, themeNames, themes, setTheme } = useTheme()
 
-const themeMenuOpen = ref(false)
+
 
 const editingNoteId = ref<number | null>(null)
 const editingName = ref('')
@@ -88,36 +88,55 @@ function handleDrop(toIndex: number) {
   draggedIndex.value = null
   dragOverIndex.value = null
 }
+
+function handleKeyboardShortcuts(event: KeyboardEvent) {
+  const target = event.target as HTMLElement
+  const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
+
+  if (isInputFocused) return
+
+  if (event.key === 't' || event.key === 'T') {
+    event.preventDefault()
+    handleAddTodoNote()
+  } else if (event.key === 'n' || event.key === 'N') {
+    event.preventDefault()
+    handleAddTextNote()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyboardShortcuts)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyboardShortcuts)
+})
 </script>
 
 <template>
   <main class="w-screen min-h-screen p-6 pt-16 text-lg font-mono transition-colors duration-200"
     :style="{ backgroundColor: theme.base }">
     <!-- Theme Switcher -->
-    <div class="fixed top-4 right-6 z-10">
-      <div class="relative">
-        <button class="px-3 py-1 border cursor-pointer transition-colors" :style="{
-          borderColor: theme.surface1,
-          backgroundColor: theme.surface0,
-          color: theme.text,
-        }" @click="themeMenuOpen = !themeMenuOpen">
-          [ {{ theme.name }} ]
-        </button>
-        <div v-if="themeMenuOpen" class="absolute right-0 mt-1 border" :style="{
-          borderColor: theme.surface1,
-          backgroundColor: theme.surface0,
-        }">
-          <button v-for="name in themeNames" :key="name"
-            class="block w-full px-3 py-1 text-left cursor-pointer transition-colors" :style="{
-              color: themeName === name ? theme.lavender : theme.text,
-              backgroundColor: themeName === name ? theme.surface1 : 'transparent',
-            }" @click="setTheme(name as ThemeName); themeMenuOpen = false"
-            @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-            @mouseleave="($event.target as HTMLElement).style.backgroundColor = themeName === name ? theme.surface1 : 'transparent'">
-            {{ themeName === name ? '> ' : ' ' }}{{ themes[name].name }}
-          </button>
-        </div>
-      </div>
+    <button popovertarget="theme-menu" class="fixed top-4 right-6 z-10 px-3 py-1 border cursor-pointer transition-colors" style="anchor-name: --theme-btn" :style="{
+      borderColor: theme.surface1,
+      backgroundColor: theme.surface0,
+      color: theme.text,
+    }">
+      [ {{ theme.name }} ]
+    </button>
+    <div id="theme-menu" popover class="m-0 p-0 border" style="position-anchor: --theme-btn; inset: unset; top: anchor(bottom); right: anchor(right)" :style="{
+      borderColor: theme.surface1,
+      backgroundColor: theme.surface0,
+    }">
+      <button v-for="name in themeNames" :key="name" popovertarget="theme-menu"
+        class="block w-full px-3 py-1 text-left cursor-pointer transition-colors" :style="{
+          color: themeName === name ? theme.lavender : theme.text,
+          backgroundColor: themeName === name ? theme.surface1 : 'transparent',
+        }" @click="setTheme(name as ThemeName)"
+        @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+        @mouseleave="($event.target as HTMLElement).style.backgroundColor = themeName === name ? theme.surface1 : 'transparent'">
+        {{ themeName === name ? '> ' : ' ' }}{{ themes[name].name }}
+      </button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
