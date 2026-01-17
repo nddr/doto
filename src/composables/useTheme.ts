@@ -153,13 +153,24 @@ const themes: Record<ThemeName, CatppuccinTheme> = {
 
 const themeNames: ThemeName[] = ['latte', 'frappe', 'macchiato', 'mocha']
 
-const currentThemeName = ref<ThemeName>('mocha')
+const STORAGE_KEY = 'oe-theme'
+
+function loadSavedTheme(): ThemeName {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved && themeNames.includes(saved as ThemeName)) {
+    return saved as ThemeName
+  }
+  return 'mocha'
+}
+
+const currentThemeName = ref<ThemeName>(loadSavedTheme())
 
 export function useTheme() {
   const theme = computed(() => themes[currentThemeName.value])
 
   function setTheme(name: ThemeName) {
     currentThemeName.value = name
+    localStorage.setItem(STORAGE_KEY, name)
   }
 
   function cycleTheme() {
