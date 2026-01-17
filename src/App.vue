@@ -127,7 +127,7 @@ onUnmounted(() => {
       [ {{ theme.name }} ]
     </button>
 
-    <img src="/public/oe.png" alt="DoToo" width="48" height="48" class="fixed top-4 left-6 z-10">
+    <img src="/public/oe.png" alt="DoToo" width="42" height="42" class="fixed top-4 left-6 z-10">
 
     <div id="theme-menu" popover class="m-0 p-0 border"
       style="position-anchor: --theme-btn; inset: unset; top: anchor(bottom); right: anchor(right)" :style="{
