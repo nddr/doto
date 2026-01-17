@@ -91,7 +91,7 @@ function handleDrop(toIndex: number) {
 </script>
 
 <template>
-  <main class="w-screen min-h-screen p-6 pt-16 font-mono transition-colors duration-200"
+  <main class="w-screen min-h-screen p-6 pt-16 text-lg font-mono transition-colors duration-200"
     :style="{ backgroundColor: theme.base }">
     <!-- Theme Switcher -->
     <div class="fixed top-4 right-6 z-10">
@@ -123,7 +123,7 @@ function handleDrop(toIndex: number) {
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <!-- Note Cards -->
       <div v-for="(note, index) in notes" :key="note.id"
-        class="flex-1 min-w-[calc(25%-12px)] max-w-full border p-4 transition-colors" :style="{
+        class="flex-1 min-w-[calc(25%-12px)] max-w-full border p-6 transition-colors" :style="{
           borderColor: draggedIndex === index ? 'white' : (dragOverIndex === index ? theme.lavender : theme.surface1),
           backgroundColor: theme.surface0,
           opacity: draggedIndex === index ? 0.5 : 1,
@@ -175,7 +175,7 @@ function handleDrop(toIndex: number) {
 
           <!-- Add Todo Input -->
           <div class="mt-3">
-            <input type="text" placeholder="> Add todo..." class="w-full bg-transparent outline-none text-sm"
+            <input type="text" placeholder="> Add todo..." class="w-full bg-transparent outline-none"
               :style="{ color: theme.overlay0 }" @keydown.enter="handleAddTodo(note.id, $event)"
               @focus="($event.target as HTMLElement).style.color = theme.text"
               @blur="handleAddTodo(note.id, $event); ($event.target as HTMLElement).style.color = theme.overlay0" />
@@ -187,7 +187,7 @@ function handleDrop(toIndex: number) {
           <textarea :value="note.content"
             @input="updateTextContent(note.id, ($event.target as HTMLTextAreaElement).value)"
             placeholder="Write your note..."
-            class="w-full bg-transparent outline-none resize-none min-h-25 text-sm scrollbar-none" :style="{
+            class="w-full bg-transparent outline-none resize-none min-h-25 scrollbar-none" :style="{
               color: theme.text,
               backgroundImage: 'repeating-linear-gradient(transparent, transparent 1.4em, rgba(255, 255, 255, 0.05) 1.4em, rgba(255, 255, 255, 0.05) calc(1.4em + 1px))',
               lineHeight: '1.4em',
