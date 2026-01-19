@@ -6,8 +6,6 @@ import { useTheme, type ThemeName } from '@/composables/useTheme'
 const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, addTodo, removeTodo, toggleTodo } = useTodoList()
 const { theme, themeName, themeNames, themes, setTheme } = useTheme()
 
-
-
 const editingNoteId = ref<number | null>(null)
 const editingName = ref('')
 const draggedIndex = ref<number | null>(null)
@@ -127,7 +125,7 @@ onUnmounted(() => {
       [ {{ theme.name }} ]
     </button>
 
-    <img src="/public/oe.png" alt="DoToo" width="42" height="42" class="fixed top-4 left-6 z-10">
+    <img src="/oe.png" alt="DoToo" width="42" height="42" class="fixed top-4 left-6 z-10">
 
     <div id="theme-menu" popover class="m-0 p-0 border"
       style="position-anchor: --theme-btn; inset: unset; top: anchor(bottom); right: anchor(right)" :style="{
@@ -182,7 +180,7 @@ onUnmounted(() => {
         <template v-if="note.type === 'todo'">
           <div class="space-y-1">
             <div v-for="todo in note.todos" :key="todo.id"
-              class="group flex items-center gap-2 px-1 -mx-1 transition-colors"
+              class="group flex items-start gap-2 px-1 -mx-1 transition-colors"
               :style="{ '--hover-bg': theme.surface1 }"
               @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface1"
               @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'">
