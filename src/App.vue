@@ -229,7 +229,7 @@ onUnmounted(() => {
         <button class="cursor-pointer transition-colors" :style="{ color: theme.overlay0 }" @click="handleAddTodoNote"
           @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
           @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
-          + New List
+          + New Tasks
         </button>
         <button class="cursor-pointer transition-colors" :style="{ color: theme.overlay0 }" @click="handleAddTextNote"
           @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
