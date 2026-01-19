@@ -37,7 +37,7 @@ function handleAddTodo(noteId: number, event: Event) {
 }
 
 function handleAddTodoNote() {
-  addTodoNote('New List')
+  addTodoNote('New Tasks')
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
     if (newNote) {
