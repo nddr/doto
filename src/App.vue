@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, nextTick, onMounted, onUnmounted } from 'vue'
 import { useTodoList } from '@/composables/useTodoList'
-import { useTheme, type ThemeName } from '@/composables/useTheme'
+import { useTheme } from '@/composables/useTheme'
+import AppHeader from '@/components/AppHeader.vue'
 
 const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, addTodo, removeTodo, toggleTodo } = useTodoList()
-const { theme, themeName, themeNames, themes, setTheme } = useTheme()
+const { theme } = useTheme()
 
 const editingNoteId = ref<number | null>(null)
 const editingName = ref('')
@@ -114,34 +115,8 @@ onUnmounted(() => {
 <template>
   <main class="w-screen min-h-screen p-6 pt-16 text-lg font-mono transition-colors duration-200"
     :style="{ backgroundColor: theme.base }">
-    <!-- Theme Switcher -->
-    <button popovertarget="theme-menu"
-      class="fixed top-4 right-6 z-10 px-3 py-1 border cursor-pointer transition-colors"
-      style="anchor-name: --theme-btn" :style="{
-        borderColor: theme.surface1,
-        backgroundColor: theme.surface0,
-        color: theme.text,
-      }">
-      [ {{ theme.name }} ]
-    </button>
 
-    <img src="/oe.png" alt="DoToo" width="42" height="42" class="fixed top-4 left-6 z-10">
-
-    <div id="theme-menu" popover class="m-0 p-0 border"
-      style="position-anchor: --theme-btn; inset: unset; top: anchor(bottom); right: anchor(right)" :style="{
-        borderColor: theme.surface1,
-        backgroundColor: theme.surface0,
-      }">
-      <button v-for="name in themeNames" :key="name" popovertarget="theme-menu"
-        class="block w-full px-3 py-1 text-left cursor-pointer transition-colors" :style="{
-          color: themeName === name ? theme.lavender : theme.text,
-          backgroundColor: themeName === name ? theme.surface1 : 'transparent',
-        }" @click="setTheme(name as ThemeName)"
-        @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-        @mouseleave="($event.target as HTMLElement).style.backgroundColor = themeName === name ? theme.surface1 : 'transparent'">
-        {{ themeName === name ? '> ' : ' ' }}{{ themes[name].name }}
-      </button>
-    </div>
+    <AppHeader />
 
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <!-- Note Cards -->
