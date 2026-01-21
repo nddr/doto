@@ -4,6 +4,8 @@ export interface Todo {
   id: number
   title: string
   completed: boolean
+  completedAt?: string
+  createdAt?: string
 }
 
 export interface TodoNote {
@@ -11,6 +13,7 @@ export interface TodoNote {
   id: number
   name: string
   todos: Todo[]
+  createdAt?: string
 }
 
 export interface TextNote {
@@ -18,6 +21,7 @@ export interface TextNote {
   id: number
   name: string
   content: string
+  createdAt?: string
 }
 
 export type Note = TodoNote | TextNote
@@ -76,6 +80,7 @@ export function useTodoList() {
       id: nextNoteId++,
       name,
       todos: [],
+      createdAt: new Date().toISOString(),
     })
   }
 
@@ -85,6 +90,7 @@ export function useTodoList() {
       id: nextNoteId++,
       name,
       content: '',
+      createdAt: new Date().toISOString(),
     })
   }
 
@@ -125,6 +131,7 @@ export function useTodoList() {
         id: nextTodoId++,
         title,
         completed: false,
+        createdAt: new Date().toISOString(),
       })
     }
   }
@@ -145,6 +152,7 @@ export function useTodoList() {
       const todo = note.todos.find((t) => t.id === todoId)
       if (todo) {
         todo.completed = !todo.completed
+        todo.completedAt = todo.completed ? new Date().toISOString() : undefined
       }
     }
   }
