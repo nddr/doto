@@ -147,7 +147,7 @@ onUnmounted(() => {
             :aria-label="`Edit ${note.name}`" @click="startEditingNote(note.id, note.name)"
             @keydown.enter="startEditingNote(note.id, note.name)"
             @keydown.space.prevent="startEditingNote(note.id, note.name)">
-            > {{ note.name }}_
+            > {{ note.name }}
           </span>
           <button v-if="editingNoteId !== note.id" class="cursor-pointer ml-2" :style="{ color: theme.overlay0 }"
             :aria-label="`Delete ${note.name}`" @click="removeNote(note.id)"
