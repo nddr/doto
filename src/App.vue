@@ -128,7 +128,7 @@ onUnmounted(() => {
         }" draggable="true" @dragstart="handleDragStart(index)" @dragend="handleDragEnd" @dragover="handleDragOver"
         @dragenter="handleDragEnter(index)" @dragleave="handleDragLeave" @drop="handleDrop(index)">
         <!-- Drag Handle -->
-        <div class="absolute top-4 left-[50%] flex justify-center py-1 px-4 cursor-grab">
+        <div class="absolute top-2 left-[calc(50%-12px)] flex justify-center py-1 px-4 cursor-grab">
           <div class="flex flex-col gap-1">
             <div class="w-6 h-0.5 rounded" :style="{ backgroundColor: theme.overlay0 }"></div>
             <div class="w-6 h-0.5 rounded" :style="{ backgroundColor: theme.overlay0 }"></div>
