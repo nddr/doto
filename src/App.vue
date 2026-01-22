@@ -121,7 +121,8 @@ onUnmounted(() => {
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <!-- Note Cards -->
       <div v-for="(note, index) in notes" :key="note.id"
-        class="relative flex-1 min-w-[calc(25%-12px)] max-w-full border p-6 transition-colors flex flex-col" :style="{
+        class="relative flex-1 min-w-[calc(25%-12px)] max-w-full border pt-8 px-6 pb-6 transition-colors flex flex-col"
+        :style="{
           borderColor: draggedIndex === index ? 'white' : (dragOverIndex === index ? theme.lavender : theme.surface1),
           backgroundColor: theme.surface0,
           opacity: draggedIndex === index ? 0.5 : 1,
