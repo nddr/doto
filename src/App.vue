@@ -126,10 +126,11 @@ onUnmounted(() => {
           borderColor: draggedIndex === index ? 'white' : (dragOverIndex === index ? theme.lavender : theme.surface1),
           backgroundColor: theme.surface0,
           opacity: draggedIndex === index ? 0.5 : 1,
-        }" draggable="true" @dragstart="handleDragStart(index)" @dragend="handleDragEnd" @dragover="handleDragOver"
-        @dragenter="handleDragEnter(index)" @dragleave="handleDragLeave" @drop="handleDrop(index)">
+        }" @dragover="handleDragOver" @dragenter="handleDragEnter(index)" @dragleave="handleDragLeave"
+        @drop="handleDrop(index)">
         <!-- Drag Handle -->
-        <div class="absolute top-2 left-[calc(50%-12px)] flex justify-center py-1 px-4 cursor-grab">
+        <div class="absolute top-2 left-[calc(50%-12px)] flex justify-center py-1 px-4 cursor-grab" draggable="true"
+          @dragstart="handleDragStart(index)" @dragend="handleDragEnd">
           <div class="flex flex-col gap-1">
             <div class="w-6 h-0.5 rounded" :style="{ backgroundColor: theme.overlay0 }"></div>
             <div class="w-6 h-0.5 rounded" :style="{ backgroundColor: theme.overlay0 }"></div>
@@ -194,11 +195,12 @@ onUnmounted(() => {
         </template>
 
         <!-- Text Note Content -->
-        <div v-else class="flex-1 min-h-25">
+        <div v-else class="flex-1 min-h-25 grid">
           <textarea :value="note.content"
             @input="updateTextContent(note.id, ($event.target as HTMLTextAreaElement).value)"
             placeholder="Write your note..."
-            class="w-full h-full bg-transparent outline-none resize-none scrollbar-none" :style="{
+            class="w-full bg-transparent outline-none resize-none scrollbar-none [grid-area:1/1/2/2] [field-sizing:content]"
+            :style="{
               color: theme.text,
               backgroundImage: 'repeating-linear-gradient(transparent, transparent 1.4em, rgba(255, 255, 255, 0.05) 1.4em, rgba(255, 255, 255, 0.05) calc(1.4em + 1px))',
               lineHeight: '1.4em',
