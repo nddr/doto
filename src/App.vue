@@ -121,20 +121,28 @@ onUnmounted(() => {
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <!-- Note Cards -->
       <div v-for="(note, index) in notes" :key="note.id"
-        class="flex-1 min-w-[calc(25%-12px)] max-w-full border p-6 transition-colors flex flex-col" :style="{
+        class="relative flex-1 min-w-[calc(25%-12px)] max-w-full border p-6 transition-colors flex flex-col" :style="{
           borderColor: draggedIndex === index ? 'white' : (dragOverIndex === index ? theme.lavender : theme.surface1),
           backgroundColor: theme.surface0,
           opacity: draggedIndex === index ? 0.5 : 1,
         }" draggable="true" @dragstart="handleDragStart(index)" @dragend="handleDragEnd" @dragover="handleDragOver"
         @dragenter="handleDragEnter(index)" @dragleave="handleDragLeave" @drop="handleDrop(index)">
+        <!-- Drag Handle -->
+        <div class="absolute top-4 left-[50%] flex justify-center py-1 px-4 cursor-grab">
+          <div class="flex flex-col gap-1">
+            <div class="w-6 h-0.5 rounded" :style="{ backgroundColor: theme.overlay0 }"></div>
+            <div class="w-6 h-0.5 rounded" :style="{ backgroundColor: theme.overlay0 }"></div>
+          </div>
+        </div>
+
         <!-- Note Name -->
-        <div class="mb-2 flex items-center justify-between group/header">
+        <div class="mb-2 flex items-center justify-between">
           <input v-if="editingNoteId === note.id" v-model="editingName" :data-note-input="note.id"
             class="w-full bg-transparent outline-none border-b"
             :style="{ color: theme.lavender, borderColor: theme.lavender }" :aria-label="`Edit name for ${note.name}`"
             @blur="saveNoteName(note.id)" @keydown.enter="saveNoteName(note.id)"
             @keydown.escape="editingNoteId = null" />
-          <span v-else class="cursor-pointer" :style="{ color: theme.lavender }" tabindex="0" role="button"
+          <span v-else class="cursor-text" :style="{ color: theme.lavender }" tabindex="0" role="button"
             :aria-label="`Edit ${note.name}`" @click="startEditingNote(note.id, note.name)"
             @keydown.enter="startEditingNote(note.id, note.name)"
             @keydown.space.prevent="startEditingNote(note.id, note.name)">
