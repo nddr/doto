@@ -12,7 +12,7 @@ const editingName = ref('')
 const draggedIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
 const dragOverDay = ref<string | null>(null)
-const selectedDate = ref<string | null>(null)
+const selectedDate = ref<string | null>(new Date().toISOString().split('T')[0] ?? null)
 
 const weekDates = computed(() => {
   const today = new Date()
