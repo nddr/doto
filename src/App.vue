@@ -1,16 +1,59 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useTodoList } from '@/composables/useTodoList'
 import { useTheme } from '@/composables/useTheme'
 import AppHeader from '@/components/AppHeader.vue'
 
-const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, addTodo, removeTodo, toggleTodo } = useTodoList()
+const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, addTodo, removeTodo, toggleTodo } = useTodoList()
 const { theme } = useTheme()
 
 const editingNoteId = ref<number | null>(null)
 const editingName = ref('')
 const draggedIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
+const dragOverDay = ref<string | null>(null)
+const selectedDate = ref<string | null>(null)
+
+const weekDates = computed(() => {
+  const today = new Date()
+  const dayOfWeek = today.getDay() // 0 = Sunday
+  const monday = new Date(today)
+  monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7))
+
+  const days = [
+    { full: 'Monday', short: 'Mon', letter: 'M' },
+    { full: 'Tuesday', short: 'Tue', letter: 'T' },
+    { full: 'Wednesday', short: 'Wed', letter: 'W' },
+    { full: 'Thursday', short: 'Thu', letter: 'T' },
+    { full: 'Friday', short: 'Fri', letter: 'F' },
+    { full: 'Saturday', short: 'Sat', letter: 'S' },
+    { full: 'Sunday', short: 'Sun', letter: 'S' },
+  ]
+
+  return days.map((day, i) => {
+    const date = new Date(monday)
+    date.setDate(monday.getDate() + i)
+    return {
+      ...day,
+      date: date.toISOString().split('T')[0] ?? '',
+    }
+  })
+})
+
+const todayDate = computed(() => new Date().toISOString().split('T')[0] ?? '')
+
+const filteredNotes = computed(() => {
+  if (!selectedDate.value) return notes.value
+  return notes.value.filter((note) => note.currentDate === selectedDate.value)
+})
+
+function selectDay(date: string) {
+  selectedDate.value = date
+}
+
+function selectAll() {
+  selectedDate.value = null
+}
 
 function startEditingNote(noteId: number, currentName: string) {
   editingNoteId.value = noteId
@@ -38,7 +81,7 @@ function handleAddTodo(noteId: number, event: Event) {
 }
 
 function handleAddTodoNote() {
-  addTodoNote('New Tasks')
+  addTodoNote('New Tasks', selectedDate.value ?? undefined)
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
     if (newNote) {
@@ -48,7 +91,7 @@ function handleAddTodoNote() {
 }
 
 function handleAddTextNote() {
-  addTextNote('New Note')
+  addTextNote('New Note', selectedDate.value ?? undefined)
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
     if (newNote) {
@@ -64,6 +107,7 @@ function handleDragStart(index: number) {
 function handleDragEnd() {
   draggedIndex.value = null
   dragOverIndex.value = null
+  dragOverDay.value = null
 }
 
 function handleDragOver(event: DragEvent) {
@@ -86,6 +130,28 @@ function handleDrop(toIndex: number) {
   }
   draggedIndex.value = null
   dragOverIndex.value = null
+}
+
+function handleDayDragEnter(date: string) {
+  if (draggedIndex.value !== null) {
+    dragOverDay.value = date
+  }
+}
+
+function handleDayDragLeave() {
+  dragOverDay.value = null
+}
+
+function handleDayDrop(date: string) {
+  if (draggedIndex.value !== null) {
+    const note = filteredNotes.value[draggedIndex.value]
+    if (note) {
+      updateNoteDate(note.id, date)
+    }
+  }
+  draggedIndex.value = null
+  dragOverIndex.value = null
+  dragOverDay.value = null
 }
 
 function handleKeyboardShortcuts(event: KeyboardEvent) {
@@ -118,9 +184,40 @@ onUnmounted(() => {
 
     <AppHeader />
 
+    <!-- Day Filter -->
+    <div class="flex gap-2 my-4">
+      <button
+        class="py-2 px-2 border text-center cursor-pointer transition-colors"
+        :style="{
+          backgroundColor: selectedDate === null ? theme.surface1 : theme.surface0,
+          borderColor: selectedDate === null ? theme.lavender : theme.surface1,
+          color: selectedDate === null ? theme.lavender : theme.overlay0,
+        }"
+        @click="selectAll"
+      >
+        <span class="md:hidden">*</span>
+        <span class="hidden md:inline">All</span>
+      </button>
+      <button v-for="day in weekDates" :key="day.date"
+        class="flex-1 py-2 px-1 border text-center cursor-pointer transition-colors" :style="{
+          backgroundColor: selectedDate === day.date ? theme.surface1 : theme.surface0,
+          borderColor: dragOverDay === day.date ? theme.lavender : (selectedDate === day.date ? theme.lavender : (day.date === todayDate ? theme.green : theme.surface1)),
+          color: selectedDate === day.date ? theme.lavender : (day.date === todayDate ? theme.green : theme.overlay0),
+        }"
+        @click="selectDay(day.date)"
+        @dragover="handleDragOver"
+        @dragenter="handleDayDragEnter(day.date)"
+        @dragleave="handleDayDragLeave"
+        @drop="handleDayDrop(day.date)">
+        <span class="md:hidden">{{ day.letter }}</span>
+        <span class="hidden md:inline xl:hidden">{{ day.short }}</span>
+        <span class="hidden xl:inline">{{ day.full }}</span>
+      </button>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <!-- Note Cards -->
-      <div v-for="(note, index) in notes" :key="note.id"
+      <div v-for="(note, index) in filteredNotes" :key="note.id"
         class="relative flex-1 min-w-[calc(25%-12px)] max-w-full border pt-8 px-6 pb-6 transition-colors flex flex-col"
         :style="{
           borderColor: draggedIndex === index ? 'white' : (dragOverIndex === index ? theme.lavender : theme.surface1),

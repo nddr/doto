@@ -75,25 +75,25 @@ let nextTodoId = initialIds.todoId
 watch(notes, (newNotes) => saveToStorage(newNotes), { deep: true })
 
 export function useTodoList() {
-  function addTodoNote(name: string) {
+  function addTodoNote(name: string, date?: string) {
     notes.value.push({
       type: 'todo',
       id: nextNoteId++,
       name,
       todos: [],
       createdAt: new Date().toISOString(),
-      currentDate: new Date().toISOString().split('T')[0],
+      currentDate: date ?? new Date().toISOString().split('T')[0],
     })
   }
 
-  function addTextNote(name: string) {
+  function addTextNote(name: string, date?: string) {
     notes.value.push({
       type: 'text',
       id: nextNoteId++,
       name,
       content: '',
       createdAt: new Date().toISOString(),
-      currentDate: new Date().toISOString().split('T')[0],
+      currentDate: date ?? new Date().toISOString().split('T')[0],
     })
   }
 
@@ -160,6 +160,13 @@ export function useTodoList() {
     }
   }
 
+  function updateNoteDate(noteId: number, date: string) {
+    const note = notes.value.find((n) => n.id === noteId)
+    if (note) {
+      note.currentDate = date
+    }
+  }
+
   return {
     notes,
     addTodoNote,
@@ -168,6 +175,7 @@ export function useTodoList() {
     removeNote,
     moveNote,
     updateTextContent,
+    updateNoteDate,
     addTodo,
     removeTodo,
     toggleTodo,
