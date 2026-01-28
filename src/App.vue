@@ -36,11 +36,16 @@ const weekDates = computed(() => {
     return {
       ...day,
       date: date.toISOString().split('T')[0] ?? '',
+      dayOfMonth: date.getDate(),
     }
   })
 })
 
 const todayDate = computed(() => new Date().toISOString().split('T')[0] ?? '')
+
+const currentMonth = computed(() => {
+  return new Date().toLocaleDateString('en-US', { month: 'long' })
+})
 
 const filteredNotes = computed(() => {
   if (!selectedDate.value) return notes.value
@@ -184,8 +189,13 @@ onUnmounted(() => {
 
     <AppHeader />
 
+    <!-- Month Header -->
+    <div class="text-2xl mt-4 mb-2" :style="{ color: theme.text }">
+      {{ currentMonth }}
+    </div>
+
     <!-- Day Filter -->
-    <div class="flex gap-2 my-4">
+    <div class="flex gap-2 mb-4">
       <button
         class="py-2 px-2 border text-center cursor-pointer transition-colors"
         :style="{
@@ -209,9 +219,9 @@ onUnmounted(() => {
         @dragenter="handleDayDragEnter(day.date)"
         @dragleave="handleDayDragLeave"
         @drop="handleDayDrop(day.date)">
-        <span class="md:hidden">{{ day.letter }}</span>
-        <span class="hidden md:inline xl:hidden">{{ day.short }}</span>
-        <span class="hidden xl:inline">{{ day.full }}</span>
+        <span class="md:hidden"><span class="opacity-50">{{ day.dayOfMonth }}</span></span>
+        <span class="hidden md:inline xl:hidden"><span class="opacity-50">{{ day.dayOfMonth }}</span> {{ day.short }}</span>
+        <span class="hidden xl:inline"><span class="opacity-50">{{ day.dayOfMonth }}</span> {{ day.full }}</span>
       </button>
     </div>
 
