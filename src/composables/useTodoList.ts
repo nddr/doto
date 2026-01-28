@@ -82,6 +82,7 @@ export function useTodoList() {
       name,
       todos: [],
       createdAt: new Date().toISOString(),
+      currentDate: new Date().toISOString().split('T')[0],
     })
   }
 
@@ -92,6 +93,7 @@ export function useTodoList() {
       name,
       content: '',
       createdAt: new Date().toISOString(),
+      currentDate: new Date().toISOString().split('T')[0],
     })
   }
 
