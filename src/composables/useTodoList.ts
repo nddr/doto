@@ -1,5 +1,22 @@
 import { ref, watch } from 'vue'
 
+export interface Note {
+  id: number
+  name: string
+  createdAt?: string
+  currentDate?: string
+}
+
+export interface TodoNote extends Note {
+  type: 'todo'
+  todos: Todo[]
+}
+
+export interface TextNote extends Note {
+  type: 'text'
+  content: string
+}
+
 export interface Todo {
   id: number
   title: string
@@ -8,27 +25,11 @@ export interface Todo {
   createdAt?: string
 }
 
-export interface TodoNote {
-  type: 'todo'
-  id: number
-  name: string
-  todos: Todo[]
-  createdAt?: string
-}
-
-export interface TextNote {
-  type: 'text'
-  id: number
-  name: string
-  content: string
-  createdAt?: string
-}
-
-export type Note = TodoNote | TextNote
+export type NoteType = TodoNote | TextNote
 
 const STORAGE_KEY = 'oe-notes'
 
-function loadFromStorage(): Note[] {
+function loadFromStorage(): NoteType[] {
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored) {
     try {
@@ -47,11 +48,11 @@ function loadFromStorage(): Note[] {
   ]
 }
 
-function saveToStorage(data: Note[]) {
+function saveToStorage(data: NoteType[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }
 
-function getNextId(notes: Note[]): { noteId: number; todoId: number } {
+function getNextId(notes: NoteType[]): { noteId: number; todoId: number } {
   let maxNoteId = 0
   let maxTodoId = 0
   for (const note of notes) {
@@ -65,7 +66,7 @@ function getNextId(notes: Note[]): { noteId: number; todoId: number } {
   return { noteId: maxNoteId + 1, todoId: maxTodoId + 1 }
 }
 
-const notes = ref<Note[]>(loadFromStorage())
+const notes = ref<NoteType[]>(loadFromStorage())
 
 const initialIds = getNextId(notes.value)
 let nextNoteId = initialIds.noteId
