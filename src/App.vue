@@ -211,8 +211,8 @@ onUnmounted(() => {
       <button v-for="day in weekDates" :key="day.date"
         class="flex-1 py-2 px-1 border text-center cursor-pointer transition-colors" :style="{
           backgroundColor: selectedDate === day.date ? theme.surface1 : theme.surface0,
-          borderColor: dragOverDay === day.date ? theme.lavender : (selectedDate === day.date ? theme.lavender : (day.date === todayDate ? theme.green : theme.surface1)),
-          color: selectedDate === day.date ? theme.lavender : (day.date === todayDate ? theme.green : theme.overlay0),
+          borderColor: dragOverDay === day.date ? theme.lavender : (selectedDate === day.date ? theme.lavender : theme.surface1),
+          color: selectedDate === day.date ? theme.lavender : (day.date === todayDate ? theme.text : theme.overlay0),
         }"
         @click="selectDay(day.date)"
         @dragover="handleDragOver"
