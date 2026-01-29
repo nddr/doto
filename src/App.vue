@@ -2,10 +2,12 @@
 import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useTodoList } from '@/composables/useTodoList'
 import { useTheme } from '@/composables/useTheme'
+import { useWeekLength } from '@/composables/useWeekLength'
 import AppHeader from '@/components/AppHeader.vue'
 
 const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo } = useTodoList()
 const { theme } = useTheme()
+const { weekLength } = useWeekLength()
 
 const editingNoteId = ref<number | null>(null)
 const editingName = ref('')
@@ -21,7 +23,7 @@ const weekDates = computed(() => {
   const monday = new Date(today)
   monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7))
 
-  const days = [
+  const allDays = [
     { full: 'Monday', short: 'Mon', letter: 'M' },
     { full: 'Tuesday', short: 'Tue', letter: 'T' },
     { full: 'Wednesday', short: 'Wed', letter: 'W' },
@@ -30,6 +32,8 @@ const weekDates = computed(() => {
     { full: 'Saturday', short: 'Sat', letter: 'S' },
     { full: 'Sunday', short: 'Sun', letter: 'S' },
   ]
+
+  const days = weekLength.value === '5' ? allDays.slice(0, 5) : allDays
 
   return days.map((day, i) => {
     const date = new Date(monday)
