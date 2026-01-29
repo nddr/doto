@@ -114,6 +114,9 @@ function handleAddTodoNote() {
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
     if (newNote) {
+      if (tagFilter.value !== 'all') {
+        updateNoteTag(newNote.id, tagFilter.value)
+      }
       startEditingNote(newNote.id, newNote.name)
     }
   })
@@ -124,6 +127,9 @@ function handleAddTextNote() {
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
     if (newNote) {
+      if (tagFilter.value !== 'all') {
+        updateNoteTag(newNote.id, tagFilter.value)
+      }
       startEditingNote(newNote.id, newNote.name)
     }
   })
@@ -213,9 +219,54 @@ onUnmounted(() => {
 
     <AppHeader />
 
-    <!-- Month Header -->
-    <div class="text-2xl mt-4 mb-2" :style="{ color: theme.text }">
-      {{ currentMonth }}
+    <!-- Month Header + Tag Filter -->
+    <div class="flex items-center justify-between mt-4 mb-2">
+      <div class="text-2xl" :style="{ color: theme.text }">
+        {{ currentMonth }}
+      </div>
+
+      <!-- Tag Filter -->
+      <div class="flex gap-4 text-sm">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <span
+            class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
+            :style="{
+              borderColor: tagFilter === 'all' ? theme.lavender : theme.overlay0,
+              backgroundColor: tagFilter === 'all' ? theme.lavender : 'transparent',
+            }"
+          >
+            <span v-if="tagFilter === 'all'" class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: theme.base }"></span>
+          </span>
+          <span :style="{ color: tagFilter === 'all' ? theme.lavender : theme.overlay0 }">All</span>
+          <input type="radio" name="tagFilter" value="all" v-model="tagFilter" class="sr-only" />
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <span
+            class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
+            :style="{
+              borderColor: tagFilter === 'work' ? theme.green : theme.overlay0,
+              backgroundColor: tagFilter === 'work' ? theme.green : 'transparent',
+            }"
+          >
+            <span v-if="tagFilter === 'work'" class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: theme.base }"></span>
+          </span>
+          <span :style="{ color: tagFilter === 'work' ? theme.green : theme.overlay0 }">Work</span>
+          <input type="radio" name="tagFilter" value="work" v-model="tagFilter" class="sr-only" />
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <span
+            class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
+            :style="{
+              borderColor: tagFilter === 'personal' ? theme.peach : theme.overlay0,
+              backgroundColor: tagFilter === 'personal' ? theme.peach : 'transparent',
+            }"
+          >
+            <span v-if="tagFilter === 'personal'" class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: theme.base }"></span>
+          </span>
+          <span :style="{ color: tagFilter === 'personal' ? theme.peach : theme.overlay0 }">Personal</span>
+          <input type="radio" name="tagFilter" value="personal" v-model="tagFilter" class="sr-only" />
+        </label>
+      </div>
     </div>
 
     <!-- Day Filter -->
@@ -239,31 +290,6 @@ onUnmounted(() => {
         <span class="hidden md:inline xl:hidden"><span class="opacity-50">{{ day.dayOfMonth }}</span> {{ day.short
         }}</span>
         <span class="hidden xl:inline"><span class="opacity-50">{{ day.dayOfMonth }}</span> {{ day.full }}</span>
-      </button>
-    </div>
-
-    <!-- Tag Filter -->
-    <div class="flex gap-2 mb-4">
-      <button class="py-1 px-3 border text-sm cursor-pointer transition-colors" :style="{
-        backgroundColor: tagFilter === 'all' ? theme.surface1 : theme.surface0,
-        borderColor: tagFilter === 'all' ? theme.lavender : theme.surface1,
-        color: tagFilter === 'all' ? theme.lavender : theme.overlay0,
-      }" @click="tagFilter = 'all'">
-        All
-      </button>
-      <button class="py-1 px-3 border text-sm cursor-pointer transition-colors" :style="{
-        backgroundColor: tagFilter === 'work' ? theme.surface1 : theme.surface0,
-        borderColor: tagFilter === 'work' ? theme.blue : theme.surface1,
-        color: tagFilter === 'work' ? theme.blue : theme.overlay0,
-      }" @click="tagFilter = 'work'">
-        Work
-      </button>
-      <button class="py-1 px-3 border text-sm cursor-pointer transition-colors" :style="{
-        backgroundColor: tagFilter === 'personal' ? theme.surface1 : theme.surface0,
-        borderColor: tagFilter === 'personal' ? theme.peach : theme.surface1,
-        color: tagFilter === 'personal' ? theme.peach : theme.overlay0,
-      }" @click="tagFilter = 'personal'">
-        Personal
       </button>
     </div>
 
@@ -293,8 +319,8 @@ onUnmounted(() => {
           <button class="w-8 h-8 text-xs flex items-center justify-center cursor-pointer border transition-colors"
             :style="{
               backgroundColor: theme.surface1,
-              borderColor: note.tags?.includes('work') ? theme.blue : (note.tags?.includes('personal') ? theme.peach : theme.surface2),
-              color: note.tags?.includes('work') ? theme.blue : (note.tags?.includes('personal') ? theme.peach : theme.overlay0),
+              borderColor: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.surface2),
+              color: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.overlay0),
             }" :title="`Tag: ${note.tags?.[0] || 'none'} (click to change)`" @click="cycleNoteTag(note.id, note.tags)">
             {{ getNoteTagBadge(note) }}
           </button>
