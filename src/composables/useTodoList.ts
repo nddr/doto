@@ -5,6 +5,7 @@ export interface Note {
   name: string
   createdAt?: string
   currentDate?: string
+  tags?: string[]
 }
 
 export interface TodoNote extends Note {
@@ -167,6 +168,17 @@ export function useTodoList() {
     }
   }
 
+  function updateNoteTag(noteId: number, tag: 'work' | 'personal' | null) {
+    const note = notes.value.find((n) => n.id === noteId)
+    if (note) {
+      if (tag === null) {
+        note.tags = []
+      } else {
+        note.tags = [tag]
+      }
+    }
+  }
+
   return {
     notes,
     addTodoNote,
@@ -176,6 +188,7 @@ export function useTodoList() {
     moveNote,
     updateTextContent,
     updateNoteDate,
+    updateNoteTag,
     addTodo,
     removeTodo,
     toggleTodo,

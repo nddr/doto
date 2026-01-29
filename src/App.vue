@@ -4,7 +4,7 @@ import { useTodoList } from '@/composables/useTodoList'
 import { useTheme } from '@/composables/useTheme'
 import AppHeader from '@/components/AppHeader.vue'
 
-const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, addTodo, removeTodo, toggleTodo } = useTodoList()
+const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo } = useTodoList()
 const { theme } = useTheme()
 
 const editingNoteId = ref<number | null>(null)
@@ -13,6 +13,7 @@ const draggedIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
 const dragOverDay = ref<string | null>(null)
 const selectedDate = ref<string | null>(new Date().toISOString().split('T')[0] ?? null)
+const tagFilter = ref<'all' | 'work' | 'personal'>('all')
 
 const weekDates = computed(() => {
   const today = new Date()
@@ -48,9 +49,32 @@ const currentMonth = computed(() => {
 })
 
 const filteredNotes = computed(() => {
-  if (!selectedDate.value) return notes.value
-  return notes.value.filter((note) => note.currentDate === selectedDate.value)
+  let result = notes.value
+  if (selectedDate.value) {
+    result = result.filter((note) => note.currentDate === selectedDate.value)
+  }
+  if (tagFilter.value !== 'all') {
+    result = result.filter((note) => note.tags?.includes(tagFilter.value))
+  }
+  return result
 })
+
+function getNoteTagBadge(note: typeof notes.value[0]): string {
+  if (note.tags?.includes('work')) return 'W'
+  if (note.tags?.includes('personal')) return 'P'
+  return '*'
+}
+
+function cycleNoteTag(noteId: number, currentTags?: string[]) {
+  const currentTag = currentTags?.[0]
+  if (!currentTag) {
+    updateNoteTag(noteId, 'work')
+  } else if (currentTag === 'work') {
+    updateNoteTag(noteId, 'personal')
+  } else {
+    updateNoteTag(noteId, null)
+  }
+}
 
 function selectDay(date: string) {
   selectedDate.value = date
@@ -196,15 +220,11 @@ onUnmounted(() => {
 
     <!-- Day Filter -->
     <div class="flex gap-2 mb-4">
-      <button
-        class="py-2 px-2 border text-center cursor-pointer transition-colors"
-        :style="{
-          backgroundColor: selectedDate === null ? theme.surface1 : theme.surface0,
-          borderColor: selectedDate === null ? theme.lavender : theme.surface1,
-          color: selectedDate === null ? theme.lavender : theme.overlay0,
-        }"
-        @click="selectAll"
-      >
+      <button class="py-2 px-2 border text-center cursor-pointer transition-colors" :style="{
+        backgroundColor: selectedDate === null ? theme.surface1 : theme.surface0,
+        borderColor: selectedDate === null ? theme.lavender : theme.surface1,
+        color: selectedDate === null ? theme.lavender : theme.overlay0,
+      }" @click="selectAll">
         <span class="md:hidden">*</span>
         <span class="hidden md:inline">All</span>
       </button>
@@ -213,15 +233,37 @@ onUnmounted(() => {
           backgroundColor: selectedDate === day.date ? theme.surface1 : theme.surface0,
           borderColor: dragOverDay === day.date ? theme.lavender : (selectedDate === day.date ? theme.lavender : theme.surface1),
           color: selectedDate === day.date ? theme.lavender : (day.date === todayDate ? theme.text : theme.overlay0),
-        }"
-        @click="selectDay(day.date)"
-        @dragover="handleDragOver"
-        @dragenter="handleDayDragEnter(day.date)"
-        @dragleave="handleDayDragLeave"
-        @drop="handleDayDrop(day.date)">
-        <span class="md:hidden"><span class="opacity-50">{{ day.dayOfMonth }}</span></span>
-        <span class="hidden md:inline xl:hidden"><span class="opacity-50">{{ day.dayOfMonth }}</span> {{ day.short }}</span>
+        }" @click="selectDay(day.date)" @dragover="handleDragOver" @dragenter="handleDayDragEnter(day.date)"
+        @dragleave="handleDayDragLeave" @drop="handleDayDrop(day.date)">
+        <span class="md:hidden flex flex-col items-center"><span>{{ day.letter }}</span><span class="opacity-50 text-sm">{{ day.dayOfMonth }}</span></span>
+        <span class="hidden md:inline xl:hidden"><span class="opacity-50">{{ day.dayOfMonth }}</span> {{ day.short
+        }}</span>
         <span class="hidden xl:inline"><span class="opacity-50">{{ day.dayOfMonth }}</span> {{ day.full }}</span>
+      </button>
+    </div>
+
+    <!-- Tag Filter -->
+    <div class="flex gap-2 mb-4">
+      <button class="py-1 px-3 border text-sm cursor-pointer transition-colors" :style="{
+        backgroundColor: tagFilter === 'all' ? theme.surface1 : theme.surface0,
+        borderColor: tagFilter === 'all' ? theme.lavender : theme.surface1,
+        color: tagFilter === 'all' ? theme.lavender : theme.overlay0,
+      }" @click="tagFilter = 'all'">
+        All
+      </button>
+      <button class="py-1 px-3 border text-sm cursor-pointer transition-colors" :style="{
+        backgroundColor: tagFilter === 'work' ? theme.surface1 : theme.surface0,
+        borderColor: tagFilter === 'work' ? theme.blue : theme.surface1,
+        color: tagFilter === 'work' ? theme.blue : theme.overlay0,
+      }" @click="tagFilter = 'work'">
+        Work
+      </button>
+      <button class="py-1 px-3 border text-sm cursor-pointer transition-colors" :style="{
+        backgroundColor: tagFilter === 'personal' ? theme.surface1 : theme.surface0,
+        borderColor: tagFilter === 'personal' ? theme.peach : theme.surface1,
+        color: tagFilter === 'personal' ? theme.peach : theme.overlay0,
+      }" @click="tagFilter = 'personal'">
+        Personal
       </button>
     </div>
 
@@ -235,6 +277,7 @@ onUnmounted(() => {
           opacity: draggedIndex === index ? 0.5 : 1,
         }" @dragover="handleDragOver" @dragenter="handleDragEnter(index)" @dragleave="handleDragLeave"
         @drop="handleDrop(index)">
+
         <!-- Drag Handle -->
         <div class="absolute top-2 left-[calc(50%-12px)] flex justify-center py-1 px-4 cursor-grab" draggable="true"
           @dragstart="handleDragStart(index)" @dragend="handleDragEnd">
@@ -245,7 +288,17 @@ onUnmounted(() => {
         </div>
 
         <!-- Note Name -->
-        <div class="mb-2 flex items-center justify-between">
+        <div class="flex items-center mb-2 gap-x-4">
+          <!-- Tag Badge -->
+          <button class="w-8 h-8 text-xs flex items-center justify-center cursor-pointer border transition-colors"
+            :style="{
+              backgroundColor: theme.surface1,
+              borderColor: note.tags?.includes('work') ? theme.blue : (note.tags?.includes('personal') ? theme.peach : theme.surface2),
+              color: note.tags?.includes('work') ? theme.blue : (note.tags?.includes('personal') ? theme.peach : theme.overlay0),
+            }" :title="`Tag: ${note.tags?.[0] || 'none'} (click to change)`" @click="cycleNoteTag(note.id, note.tags)">
+            {{ getNoteTagBadge(note) }}
+          </button>
+
           <input v-if="editingNoteId === note.id" v-model="editingName" :data-note-input="note.id"
             class="w-full bg-transparent outline-none border-b"
             :style="{ color: theme.lavender, borderColor: theme.lavender }" :aria-label="`Edit name for ${note.name}`"
@@ -255,9 +308,9 @@ onUnmounted(() => {
             :aria-label="`Edit ${note.name}`" @click="startEditingNote(note.id, note.name)"
             @keydown.enter="startEditingNote(note.id, note.name)"
             @keydown.space.prevent="startEditingNote(note.id, note.name)">
-            > {{ note.name }}
+            {{ note.name }}
           </span>
-          <button v-if="editingNoteId !== note.id" class="cursor-pointer ml-2" :style="{ color: theme.overlay0 }"
+          <button v-if="editingNoteId !== note.id" class="cursor-pointer ml-auto" :style="{ color: theme.overlay0 }"
             :aria-label="`Delete ${note.name}`" @click="removeNote(note.id)"
             @mouseenter="($event.target as HTMLElement).style.color = theme.red"
             @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0">
