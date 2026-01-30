@@ -85,7 +85,7 @@ const { weekLength, setWeekLength } = useWeekLength()
       @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
       @mouseleave="($event.target as HTMLElement).style.backgroundColor = themeName === name ? theme.surface1 : 'transparent'"
     >
-      {{ themeName === name ? '> ' : '  ' }}{{ themes[name].name }}
+      {{ themeName === name ? '> ' : ' ' }}{{ themes[name].name }}
     </button>
   </div>
 
@@ -111,7 +111,7 @@ const { weekLength, setWeekLength } = useWeekLength()
       @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
       @mouseleave="($event.target as HTMLElement).style.backgroundColor = weekLength === '5' ? theme.surface1 : 'transparent'"
     >
-      {{ weekLength === '5' ? '> ' : '  ' }}5 days
+      {{ weekLength === '5' ? '> ' : ' ' }}5 days
     </button>
     <button
       popovertarget="settings-menu"
@@ -124,7 +124,7 @@ const { weekLength, setWeekLength } = useWeekLength()
       @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
       @mouseleave="($event.target as HTMLElement).style.backgroundColor = weekLength === '7' ? theme.surface1 : 'transparent'"
     >
-      {{ weekLength === '7' ? '> ' : '  ' }}7 days
+      {{ weekLength === '7' ? '> ' : ' ' }}7 days
     </button>
   </div>
 </template>
