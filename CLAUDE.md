@@ -40,6 +40,7 @@ pnpm lint:oxlint      # Run Oxlint with auto-fix
 ## Environment Variables
 
 Defined in `env.d.ts`, configured in `.env`:
+
 - `VITE_API_BASE_URL` - API endpoint
 - `VITE_CLASSIC_APP_URL` - Classic app URL
 - `VITE_APP_ENV` - Environment mode (development | staging | production)

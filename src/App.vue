@@ -7,7 +7,7 @@ import AppHeader from '@/components/AppHeader.vue'
 
 const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo } = useTodoList()
 const { theme } = useTheme()
-const { weekLength } = useWeekLength()
+const { weekLength } = useWeekLength();
 
 const editingNoteId = ref<number | null>(null)
 const editingName = ref('')
@@ -220,7 +220,6 @@ onUnmounted(() => {
 <template>
   <main class="w-screen min-h-screen p-6 pt-16 text-lg font-mono transition-colors duration-200"
     :style="{ backgroundColor: theme.base }">
-
     <AppHeader />
 
     <!-- Month Header + Tag Filter -->
@@ -232,40 +231,34 @@ onUnmounted(() => {
       <!-- Tag Filter -->
       <div class="flex gap-4 text-sm">
         <label class="flex items-center gap-2 cursor-pointer">
-          <span
-            class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
-            :style="{
-              borderColor: tagFilter === 'all' ? theme.lavender : theme.overlay0,
-              backgroundColor: tagFilter === 'all' ? theme.lavender : 'transparent',
-            }"
-          >
-            <span v-if="tagFilter === 'all'" class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: theme.base }"></span>
+          <span class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors" :style="{
+            borderColor: tagFilter === 'all' ? theme.lavender : theme.overlay0,
+            backgroundColor: tagFilter === 'all' ? theme.lavender : 'transparent',
+          }">
+            <span v-if="tagFilter === 'all'" class="w-1.5 h-1.5 rounded-full"
+              :style="{ backgroundColor: theme.base }"></span>
           </span>
           <span :style="{ color: tagFilter === 'all' ? theme.lavender : theme.overlay0 }">All</span>
           <input type="radio" name="tagFilter" value="all" v-model="tagFilter" class="sr-only" />
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
-          <span
-            class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
-            :style="{
-              borderColor: tagFilter === 'work' ? theme.green : theme.overlay0,
-              backgroundColor: tagFilter === 'work' ? theme.green : 'transparent',
-            }"
-          >
-            <span v-if="tagFilter === 'work'" class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: theme.base }"></span>
+          <span class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors" :style="{
+            borderColor: tagFilter === 'work' ? theme.green : theme.overlay0,
+            backgroundColor: tagFilter === 'work' ? theme.green : 'transparent',
+          }">
+            <span v-if="tagFilter === 'work'" class="w-1.5 h-1.5 rounded-full"
+              :style="{ backgroundColor: theme.base }"></span>
           </span>
           <span :style="{ color: tagFilter === 'work' ? theme.green : theme.overlay0 }">Work</span>
           <input type="radio" name="tagFilter" value="work" v-model="tagFilter" class="sr-only" />
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
-          <span
-            class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
-            :style="{
-              borderColor: tagFilter === 'personal' ? theme.peach : theme.overlay0,
-              backgroundColor: tagFilter === 'personal' ? theme.peach : 'transparent',
-            }"
-          >
-            <span v-if="tagFilter === 'personal'" class="w-1.5 h-1.5 rounded-full" :style="{ backgroundColor: theme.base }"></span>
+          <span class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors" :style="{
+            borderColor: tagFilter === 'personal' ? theme.peach : theme.overlay0,
+            backgroundColor: tagFilter === 'personal' ? theme.peach : 'transparent',
+          }">
+            <span v-if="tagFilter === 'personal'" class="w-1.5 h-1.5 rounded-full"
+              :style="{ backgroundColor: theme.base }"></span>
           </span>
           <span :style="{ color: tagFilter === 'personal' ? theme.peach : theme.overlay0 }">Personal</span>
           <input type="radio" name="tagFilter" value="personal" v-model="tagFilter" class="sr-only" />
@@ -290,9 +283,11 @@ onUnmounted(() => {
           color: selectedDate === day.date ? theme.lavender : (day.date === todayDate ? theme.text : theme.overlay0),
         }" @click="selectDay(day.date)" @dragover="handleDragOver" @dragenter="handleDayDragEnter(day.date)"
         @dragleave="handleDayDragLeave" @drop="handleDayDrop(day.date)">
-        <span class="md:hidden flex flex-col items-center"><span>{{ day.letter }}</span><span class="opacity-50 text-sm">{{ day.dayOfMonth }}</span></span>
-        <span class="hidden md:inline xl:hidden"><span class="opacity-50">{{ day.dayOfMonth }}</span> {{ day.short
-        }}</span>
+        <span class="md:hidden flex flex-col items-center"><span>{{ day.letter }}</span><span
+            class="opacity-50 text-sm">{{ day.dayOfMonth }}</span></span>
+        <span class="hidden md:inline xl:hidden"><span class="opacity-50">{{ day.dayOfMonth }}</span>
+          {{ day.short
+          }}</span>
         <span class="hidden xl:inline"><span class="opacity-50">{{ day.dayOfMonth }}</span> {{ day.full }}</span>
       </button>
     </div>
@@ -307,7 +302,6 @@ onUnmounted(() => {
           opacity: draggedIndex === index ? 0.5 : 1,
         }" @dragover="handleDragOver" @dragenter="handleDragEnter(index)" @dragleave="handleDragLeave"
         @drop="handleDrop(index)">
-
         <!-- Drag Handle -->
         <div class="absolute top-2 left-[calc(50%-12px)] flex justify-center py-1 px-4 cursor-grab" draggable="true"
           @dragstart="handleDragStart(index)" @dragend="handleDragEnd">
