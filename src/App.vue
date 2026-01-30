@@ -226,7 +226,10 @@ onUnmounted(() => {
 
     <!-- Month Header + Tag Filter -->
     <div class="flex items-center justify-between mt-4 mb-2">
-      <div class="text-2xl" :style="{ color: theme.text }">
+      <div
+        class="text-2xl"
+        :style="{ color: theme.text }"
+      >
         {{ currentMonth }}
       </div>
 
@@ -247,7 +250,13 @@ onUnmounted(() => {
             ></span>
           </span>
           <span :style="{ color: tagFilter === 'all' ? theme.lavender : theme.overlay0 }">All</span>
-          <input type="radio" name="tagFilter" value="all" v-model="tagFilter" class="sr-only" />
+          <input
+            type="radio"
+            name="tagFilter"
+            value="all"
+            v-model="tagFilter"
+            class="sr-only"
+          />
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
           <span
@@ -264,7 +273,13 @@ onUnmounted(() => {
             ></span>
           </span>
           <span :style="{ color: tagFilter === 'work' ? theme.green : theme.overlay0 }">Work</span>
-          <input type="radio" name="tagFilter" value="work" v-model="tagFilter" class="sr-only" />
+          <input
+            type="radio"
+            name="tagFilter"
+            value="work"
+            v-model="tagFilter"
+            class="sr-only"
+          />
         </label>
         <label class="flex items-center gap-2 cursor-pointer">
           <span
@@ -362,8 +377,14 @@ onUnmounted(() => {
           @dragend="handleDragEnd"
         >
           <div class="flex flex-col gap-1">
-            <div class="w-6 h-0.5 rounded" :style="{ backgroundColor: theme.overlay0 }"></div>
-            <div class="w-6 h-0.5 rounded" :style="{ backgroundColor: theme.overlay0 }"></div>
+            <div
+              class="w-6 h-0.5 rounded"
+              :style="{ backgroundColor: theme.overlay0 }"
+            ></div>
+            <div
+              class="w-6 h-0.5 rounded"
+              :style="{ backgroundColor: theme.overlay0 }"
+            ></div>
           </div>
         </div>
 
@@ -421,7 +442,10 @@ onUnmounted(() => {
         </div>
 
         <!-- Separator -->
-        <div class="border-b mb-3" :style="{ borderColor: theme.surface1 }"></div>
+        <div
+          class="border-b mb-3"
+          :style="{ borderColor: theme.surface1 }"
+        ></div>
 
         <!-- Todo List Content -->
         <template v-if="note.type === 'todo'">
@@ -476,7 +500,10 @@ onUnmounted(() => {
         </template>
 
         <!-- Text Note Content -->
-        <div v-else class="flex-1 min-h-25 grid">
+        <div
+          v-else
+          class="flex-1 min-h-25 grid"
+        >
           <textarea
             :value="note.content"
             @input="updateTextContent(note.id, ($event.target as HTMLTextAreaElement).value)"
