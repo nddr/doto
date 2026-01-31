@@ -153,7 +153,8 @@ function handleAddTodo(noteId: number, event: Event) {
 }
 
 function handleAddTodoNote() {
-  addTodoNote('New Tasks', selectedDate.value ?? undefined)
+  const defaultName = new Date().toISOString().split('T')[0] ?? ''
+  addTodoNote(defaultName, selectedDate.value ?? undefined)
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
     if (newNote) {
@@ -166,7 +167,8 @@ function handleAddTodoNote() {
 }
 
 function handleAddTextNote() {
-  addTextNote('New Note', selectedDate.value ?? undefined)
+  const defaultName = new Date().toISOString().split('T')[0] ?? ''
+  addTextNote(defaultName, selectedDate.value ?? undefined)
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
     if (newNote) {
