@@ -439,6 +439,17 @@ onUnmounted(() => {
           </div>
         </div>
 
+        <!-- Close Button -->
+        <button
+          class="absolute top-4 right-4 flex w-4 h-4 p-1 border border-red-200 cursor-pointer hover:border-red-400"
+          :style="{ color: theme.overlay0 }"
+          :aria-label="`Delete ${note.name}`"
+          @click="removeNote(note.id)"
+          @mouseenter="($event.target as HTMLElement).style.color = theme.red"
+          @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
+        >
+        </button>
+
         <!-- Left Gutter -->
         <div class="flex flex-col items-center gap-4 px-4 -pt-2">
           <!-- Tag Badge -->
@@ -525,17 +536,6 @@ onUnmounted(() => {
           >
             {{ note.name }}
           </span>
-          <button
-            v-if="editingNoteId !== note.id"
-            class="cursor-pointer ml-auto"
-            :style="{ color: theme.overlay0 }"
-            :aria-label="`Delete ${note.name}`"
-            @click="removeNote(note.id)"
-            @mouseenter="($event.target as HTMLElement).style.color = theme.red"
-            @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
-          >
-            [x]
-          </button>
         </div>
 
         <!-- Separator -->
