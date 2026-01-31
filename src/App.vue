@@ -18,12 +18,13 @@ const dragOverIndex = ref<number | null>(null)
 const dragOverDay = ref<string | null>(null)
 const selectedDate = ref<string | null>(new Date().toISOString().split('T')[0] ?? null)
 const tagFilter = ref<'all' | 'work' | 'personal'>('all')
+const weekOffset = ref(0)
 
 const weekDates = computed(() => {
   const today = new Date()
   const dayOfWeek = today.getDay() // 0 = Sunday
   const monday = new Date(today)
-  monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7))
+  monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7) + (weekOffset.value * 7))
 
   const allDays = [
     { full: 'Monday', short: 'Mon', letter: 'M' },
@@ -51,7 +52,19 @@ const weekDates = computed(() => {
 const todayDate = computed(() => new Date().toISOString().split('T')[0] ?? '')
 
 const currentMonth = computed(() => {
-  return new Date().toLocaleDateString('en-US', { month: 'long' })
+  const today = new Date()
+  const dayOfWeek = today.getDay()
+  const monday = new Date(today)
+  monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7) + (weekOffset.value * 7))
+  return monday.toLocaleDateString('en-US', { month: 'long' })
+})
+
+const currentYear = computed(() => {
+  const today = new Date()
+  const dayOfWeek = today.getDay()
+  const monday = new Date(today)
+  monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7) + (weekOffset.value * 7))
+  return monday.getFullYear()
 })
 
 const filteredNotes = computed(() => {
@@ -86,8 +99,12 @@ function selectDay(date: string) {
   selectedDate.value = date
 }
 
-function selectAll() {
-  selectedDate.value = null
+function goToPreviousWeek() {
+  weekOffset.value--
+}
+
+function goToNextWeek() {
+  weekOffset.value++
 }
 
 function startEditingNote(noteId: number, currentName: string) {
@@ -250,7 +267,7 @@ onUnmounted(() => {
         class="text-2xl"
         :style="{ color: theme.text }"
       >
-        {{ currentMonth }}
+        {{ currentMonth }} <span :style="{ color: theme.overlay0 }">{{ currentYear }}</span>
       </div>
 
       <!-- Tag Filter -->
@@ -334,14 +351,15 @@ onUnmounted(() => {
       <button
         class="py-2 px-2 border text-center cursor-pointer transition-colors"
         :style="{
-        backgroundColor: selectedDate === null ? theme.surface1 : theme.surface0,
-        borderColor: selectedDate === null ? theme.lavender : theme.surface1,
-        color: selectedDate === null ? theme.lavender : theme.overlay0,
-      }"
-        @click="selectAll"
+          backgroundColor: theme.surface0,
+          borderColor: theme.surface1,
+          color: theme.overlay0,
+        }"
+        @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
+        @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
+        @click="goToPreviousWeek"
       >
-        <span class="md:hidden">*</span>
-        <span class="hidden md:inline">All</span>
+        &lt;
       </button>
       <button
         v-for="day in weekDates"
@@ -370,6 +388,19 @@ onUnmounted(() => {
         <span class="hidden xl:inline"
           ><span class="opacity-50">{{ day.dayOfMonth }}</span> {{ day.full }}</span
         >
+      </button>
+      <button
+        class="py-2 px-2 border text-center cursor-pointer transition-colors"
+        :style="{
+          backgroundColor: theme.surface0,
+          borderColor: theme.surface1,
+          color: theme.overlay0,
+        }"
+        @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
+        @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
+        @click="goToNextWeek"
+      >
+        &gt;
       </button>
     </div>
 
