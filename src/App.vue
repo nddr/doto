@@ -5,7 +5,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 import AppHeader from '@/components/AppHeader.vue'
 
-const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo } = useTodoList()
+const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, toggleAutoAdvance, addTodo, removeTodo, toggleTodo } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength();
 
@@ -358,7 +358,7 @@ onUnmounted(() => {
       <div
         v-for="(note, index) in filteredNotes"
         :key="note.id"
-        class="relative flex-1 min-w-[calc(25%-12px)] max-w-full border pt-8 px-6 pb-6 transition-colors flex flex-col"
+        class="relative flex-1 min-w-[calc(25%-12px)] max-w-full border pt-8 transition-colors flex"
         :style="{
           borderColor: draggedIndex === index ? 'white' : (dragOverIndex === index ? theme.lavender : theme.surface1),
           backgroundColor: theme.surface0,
@@ -388,11 +388,11 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Note Name -->
-        <div class="flex items-center mb-2 gap-x-4">
+        <!-- Left Gutter -->
+        <div class="flex flex-col items-center gap-4 px-4 -pt-2">
           <!-- Tag Badge -->
           <button
-            class="w-8 h-8 text-xs flex items-center justify-center cursor-pointer border transition-colors"
+            class="w-8 h-8 text-md flex items-center justify-center cursor-pointer border transition-colors"
             :style="{
               backgroundColor: theme.surface1,
               borderColor: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.surface2),
@@ -404,7 +404,30 @@ onUnmounted(() => {
             {{ getNoteTagBadge(note) }}
           </button>
 
-          <input
+          <!-- Auto-Advance Toggle -->
+          <button
+            class="w-8 h-12 relative cursor-pointer transition-colors"
+            :style="{
+              backgroundColor: note.autoAdvance ? theme.lavender : theme.surface1,
+            }"
+            title="Auto-advance to current day"
+            @click="toggleAutoAdvance(note.id)"
+          >
+            <span
+              class="absolute left-1 w-6 h-6 transition-all"
+              :style="{
+                backgroundColor: theme.base,
+                top: note.autoAdvance ? '4px' : 'calc(100% - 28px)',
+              }"
+            ></span>
+          </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col pr-6 pb-6">
+          <!-- Note Name -->
+          <div class="flex items-center mb-3">
+            <input
             v-if="editingNoteId === note.id"
             v-model="editingName"
             :data-note-input="note.id"
@@ -515,6 +538,7 @@ onUnmounted(() => {
               lineHeight: '1.4em',
             }"
           ></textarea>
+        </div>
         </div>
       </div>
 

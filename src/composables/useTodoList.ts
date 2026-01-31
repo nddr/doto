@@ -6,6 +6,7 @@ export interface Note {
   createdAt?: string
   currentDate?: string
   tags?: string[]
+  autoAdvance?: boolean
 }
 
 export interface TodoNote extends Note {
@@ -72,6 +73,18 @@ const notes = ref<NoteType[]>(loadFromStorage())
 const initialIds = getNextId(notes.value)
 let nextNoteId = initialIds.noteId
 let nextTodoId = initialIds.todoId
+
+// Auto-advance notes on load
+function advanceNotes() {
+  const today = new Date().toISOString().split('T')[0] ?? ''
+  for (const note of notes.value) {
+    if (note.autoAdvance && note.currentDate && note.currentDate < today) {
+      note.currentDate = today
+    }
+  }
+}
+
+advanceNotes()
 
 watch(notes, (newNotes) => saveToStorage(newNotes), { deep: true })
 
@@ -179,6 +192,13 @@ export function useTodoList() {
     }
   }
 
+  function toggleAutoAdvance(noteId: number) {
+    const note = notes.value.find((n) => n.id === noteId)
+    if (note) {
+      note.autoAdvance = !note.autoAdvance
+    }
+  }
+
   return {
     notes,
     addTodoNote,
@@ -189,6 +209,7 @@ export function useTodoList() {
     updateTextContent,
     updateNoteDate,
     updateNoteTag,
+    toggleAutoAdvance,
     addTodo,
     removeTodo,
     toggleTodo,
