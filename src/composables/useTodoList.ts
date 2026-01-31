@@ -205,6 +205,16 @@ export function useTodoList() {
     }
   }
 
+  function renameTodo(noteId: number, todoId: number, title: string) {
+    const note = notes.value.find((n) => n.id === noteId)
+    if (note && note.type === 'todo') {
+      const todo = note.todos.find((t) => t.id === todoId)
+      if (todo) {
+        todo.title = title
+      }
+    }
+  }
+
   function updateNoteDate(noteId: number, date: string) {
     const note = notes.value.find((n) => n.id === noteId)
     if (note) {
@@ -258,5 +268,6 @@ export function useTodoList() {
     addTodo,
     removeTodo,
     toggleTodo,
+    renameTodo,
   }
 }

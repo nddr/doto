@@ -5,12 +5,14 @@ import { useTheme } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 import AppHeader from '@/components/AppHeader.vue'
 
-const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, toggleAutoAdvance, toggleAutoDuplicate, addTodo, removeTodo, toggleTodo } = useTodoList()
+const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, toggleAutoAdvance, toggleAutoDuplicate, addTodo, removeTodo, toggleTodo, renameTodo } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 
 const editingNoteId = ref<number | null>(null)
 const editingName = ref('')
+const editingTodoKey = ref<{ noteId: number; todoId: number } | null>(null)
+const editingTodoTitle = ref('')
 const draggedIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
 const dragOverDay = ref<string | null>(null)
@@ -104,6 +106,24 @@ function saveNoteName(noteId: number) {
   }
   editingNoteId.value = null
   editingName.value = ''
+}
+
+function startEditingTodo(noteId: number, todoId: number, currentTitle: string) {
+  editingTodoKey.value = { noteId, todoId }
+  editingTodoTitle.value = currentTitle
+  nextTick(() => {
+    const input = document.querySelector(`[data-todo-input="${noteId}-${todoId}"]`) as HTMLInputElement
+    input?.focus()
+    input?.select()
+  })
+}
+
+function saveTodoTitle(noteId: number, todoId: number) {
+  if (editingTodoTitle.value.trim()) {
+    renameTodo(noteId, todoId, editingTodoTitle.value.trim())
+  }
+  editingTodoKey.value = null
+  editingTodoTitle.value = ''
 }
 
 function handleAddTodo(noteId: number, event: Event) {
@@ -511,11 +531,23 @@ onUnmounted(() => {
               >
                 [{{ todo.completed ? 'x' : ' ' }}]
               </span>
+              <input
+                v-if="editingTodoKey?.noteId === note.id && editingTodoKey?.todoId === todo.id"
+                v-model="editingTodoTitle"
+                :data-todo-input="`${note.id}-${todo.id}`"
+                class="flex-1 min-w-0 bg-transparent outline-none border-b"
+                :style="{ color: theme.text, borderColor: theme.lavender }"
+                :aria-label="`Edit todo: ${todo.title}`"
+                @blur="saveTodoTitle(note.id, todo.id)"
+                @keydown.enter="saveTodoTitle(note.id, todo.id)"
+                @keydown.escape="editingTodoKey = null"
+              />
               <span
-                class="flex-1 min-w-0 break-all cursor-pointer"
+                v-else
+                class="flex-1 min-w-0 break-all cursor-text"
                 :class="{ 'line-through': todo.completed }"
                 :style="{ color: todo.completed ? theme.surface2 : theme.text }"
-                @click="toggleTodo(note.id, todo.id)"
+                @click="startEditingTodo(note.id, todo.id, todo.title)"
               >
                 {{ todo.title }}
               </span>
