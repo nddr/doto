@@ -489,7 +489,7 @@ onUnmounted(() => {
                 [{{ todo.completed ? 'x' : ' ' }}]
               </span>
               <span
-                class="flex-1 cursor-pointer"
+                class="flex-1 min-w-0 break-all cursor-pointer"
                 :class="{ 'line-through': todo.completed }"
                 :style="{ color: todo.completed ? theme.surface2 : theme.text }"
                 @click="toggleTodo(note.id, todo.id)"
