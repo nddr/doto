@@ -583,7 +583,7 @@ onUnmounted(() => {
                 {{ todo.title }}
               </span>
               <button
-                class="cursor-pointer"
+                class="cursor-pointer md:hidden md:group-hover:block"
                 :style="{ color: theme.overlay0 }"
                 @click="removeTodo(note.id, todo.id)"
                 @mouseenter="($event.target as HTMLElement).style.color = theme.red"
