@@ -215,6 +215,18 @@ export function useTodoList() {
     }
   }
 
+  function moveTodo(noteId: number, fromIndex: number, toIndex: number) {
+    const note = notes.value.find((n) => n.id === noteId)
+    if (note && note.type === 'todo') {
+      if (fromIndex === toIndex) return
+      if (fromIndex < 0 || fromIndex >= note.todos.length) return
+      if (toIndex < 0 || toIndex >= note.todos.length) return
+      const removed = note.todos[fromIndex]!
+      note.todos.splice(fromIndex, 1)
+      note.todos.splice(toIndex, 0, removed)
+    }
+  }
+
   function updateNoteDate(noteId: number, date: string) {
     const note = notes.value.find((n) => n.id === noteId)
     if (note) {
@@ -269,5 +281,6 @@ export function useTodoList() {
     removeTodo,
     toggleTodo,
     renameTodo,
+    moveTodo,
   }
 }

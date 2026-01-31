@@ -5,7 +5,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 import AppHeader from '@/components/AppHeader.vue'
 
-const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, toggleAutoAdvance, toggleAutoDuplicate, addTodo, removeTodo, toggleTodo, renameTodo } = useTodoList()
+const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, toggleAutoAdvance, toggleAutoDuplicate, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 
@@ -16,6 +16,8 @@ const editingTodoTitle = ref('')
 const draggedIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
 const dragOverDay = ref<string | null>(null)
+const draggedTodo = ref<{ noteId: number; todoIndex: number } | null>(null)
+const dragOverTodoIndex = ref<number | null>(null)
 const selectedDate = ref<string | null>(new Date().toISOString().split('T')[0] ?? null)
 const tagFilter = ref<'all' | 'work' | 'personal'>('all')
 const weekOffset = ref(0)
@@ -228,6 +230,35 @@ function handleDayDrop(date: string) {
   draggedIndex.value = null
   dragOverIndex.value = null
   dragOverDay.value = null
+}
+
+function handleTodoDragStart(noteId: number, todoIndex: number, event: DragEvent) {
+  event.stopPropagation()
+  draggedTodo.value = { noteId, todoIndex }
+}
+
+function handleTodoDragEnd() {
+  draggedTodo.value = null
+  dragOverTodoIndex.value = null
+}
+
+function handleTodoDragEnter(noteId: number, todoIndex: number) {
+  if (draggedTodo.value !== null && draggedTodo.value.noteId === noteId && draggedTodo.value.todoIndex !== todoIndex) {
+    dragOverTodoIndex.value = todoIndex
+  }
+}
+
+function handleTodoDragLeave() {
+  dragOverTodoIndex.value = null
+}
+
+function handleTodoDrop(noteId: number, toIndex: number, event: DragEvent) {
+  event.stopPropagation()
+  if (draggedTodo.value !== null && draggedTodo.value.noteId === noteId && draggedTodo.value.todoIndex !== toIndex) {
+    moveTodo(noteId, draggedTodo.value.todoIndex, toIndex)
+  }
+  draggedTodo.value = null
+  dragOverTodoIndex.value = null
 }
 
 function handleKeyboardShortcuts(event: KeyboardEvent) {
@@ -548,13 +579,30 @@ onUnmounted(() => {
         <template v-if="note.type === 'todo'">
           <div class="space-y-1">
             <div
-              v-for="todo in note.todos"
+              v-for="(todo, todoIndex) in note.todos"
               :key="todo.id"
               class="group flex items-start gap-2 px-1 -mx-1 transition-colors"
-              :style="{ '--hover-bg': theme.surface1 }"
+              :style="{
+                '--hover-bg': theme.surface1,
+                opacity: draggedTodo?.noteId === note.id && draggedTodo?.todoIndex === todoIndex ? 0.5 : 1,
+                borderTop: dragOverTodoIndex === todoIndex && draggedTodo?.noteId === note.id ? `2px solid ${theme.lavender}` : '2px solid transparent',
+              }"
               @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface1"
               @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
+              @dragover="handleDragOver"
+              @dragenter="handleTodoDragEnter(note.id, todoIndex)"
+              @dragleave="handleTodoDragLeave"
+              @drop="handleTodoDrop(note.id, todoIndex, $event)"
             >
+              <span
+                class="cursor-grab select-none"
+                :style="{ color: theme.overlay0 }"
+                draggable="true"
+                @dragstart="handleTodoDragStart(note.id, todoIndex, $event)"
+                @dragend="handleTodoDragEnd"
+              >
+                ::
+              </span>
               <span
                 class="cursor-pointer select-none"
                 :style="{ color: todo.completed ? theme.surface2 : theme.green }"
