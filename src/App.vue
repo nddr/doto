@@ -8,7 +8,7 @@ import { toLocalDateString } from '@/utils/date'
 import AppHeader from '@/components/AppHeader.vue'
 import ToastContainer from '@/components/ToastContainer.vue'
 
-const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes } = useTodoList()
+const { notes, addTaskNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 const { showCreatedAt } = useShowCreatedAt()
@@ -161,9 +161,9 @@ function handleAddTodo(noteId: number, event: Event) {
   input.value = ''
 }
 
-function handleAddTodoNote() {
+function handleAddTaskNote() {
   const defaultName = toLocalDateString()
-  addTodoNote(defaultName, selectedDate.value ?? undefined)
+  addTaskNote(defaultName, selectedDate.value ?? undefined)
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
     if (newNote) {
@@ -294,7 +294,7 @@ function handleKeyboardShortcuts(event: KeyboardEvent) {
 
   if (event.key === 't' || event.key === 'T') {
     event.preventDefault()
-    handleAddTodoNote()
+    handleAddTaskNote()
   } else if (event.key === 'n' || event.key === 'N') {
     event.preventDefault()
     handleAddTextNote()
@@ -709,7 +709,7 @@ onUnmounted(() => {
         <button
           class="cursor-pointer transition-colors"
           :style="{ color: theme.overlay0 }"
-          @click="handleAddTodoNote"
+          @click="handleAddTaskNote"
           @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
           @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
         >

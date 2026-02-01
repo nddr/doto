@@ -1,4 +1,5 @@
 import { ref, watch } from 'vue'
+
 import { toLocalDateString, toLocalISOString } from '@/utils/date'
 
 export interface Note {
@@ -10,7 +11,7 @@ export interface Note {
   autoAdvance?: boolean
 }
 
-export interface TodoNote extends Note {
+export interface TaskNote extends Note {
   type: 'todo'
   todos: Todo[]
 }
@@ -28,7 +29,7 @@ export interface Todo {
   createdAt?: string
 }
 
-export type NoteType = TodoNote | TextNote
+export type NoteType = TaskNote | TextNote
 
 const STORAGE_KEY = 'oe-notes'
 
@@ -102,7 +103,7 @@ advanceNotes()
 watch(notes, (newNotes) => saveToStorage(newNotes), { deep: true })
 
 export function useTodoList() {
-  function addTodoNote(name: string, date?: string) {
+  function addTaskNote(name: string, date?: string) {
     notes.value.push({
       type: 'todo',
       id: nextNoteId++,
@@ -215,7 +216,7 @@ export function useTodoList() {
     fromNoteId: number,
     toNoteId: number,
     fromTodoIndex: number,
-    toTodoIndex: number
+    toTodoIndex: number,
   ) {
     const fromNote = notes.value.find((n) => n.id === fromNoteId)
     const toNote = notes.value.find((n) => n.id === toNoteId)
@@ -260,7 +261,7 @@ export function useTodoList() {
 
   return {
     notes,
-    addTodoNote,
+    addTaskNote,
     addTextNote,
     renameNote,
     removeNote,
