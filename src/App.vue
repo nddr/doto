@@ -7,6 +7,7 @@ import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
 import { toLocalDateString } from '@/utils/date'
 import AppHeader from '@/components/AppHeader.vue'
 import ToastContainer from '@/components/ToastContainer.vue'
+import Dialog from '@/components/Dialog.vue'
 import TagFilter from '@/components/TagFilter.vue'
 import DayFilter from '@/components/DayFilter.vue'
 import NoteCard from '@/components/NoteCard.vue'
@@ -362,5 +363,6 @@ onUnmounted(() => {
     </div>
 
     <ToastContainer />
+    <Dialog />
   </main>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useToast, type Toast, type ToastAction } from '@/composables/useToast'
+import { useToast, type Toast } from '@/composables/useToast'
 import { useTheme } from '@/composables/useTheme'
 
 const { toasts, dismiss } = useToast()
@@ -18,22 +18,6 @@ const typeIcons: Record<Toast['type'], string> = {
   error: '✕',
   info: 'i',
   warning: '!',
-}
-
-function handleAction(toast: Toast, action: ToastAction) {
-  action.handler()
-  dismiss(toast.id)
-}
-
-function getActionColor(style: ToastAction['style']) {
-  switch (style) {
-    case 'primary':
-      return theme.value.blue
-    case 'danger':
-      return theme.value.red
-    default:
-      return theme.value.text
-  }
 }
 </script>
 
@@ -81,38 +65,6 @@ function getActionColor(style: ToastAction['style']) {
             ✕
           </button>
         </div>
-
-        <!-- Action buttons -->
-        <div
-          v-if="toast.actions?.length"
-          class="flex justify-end gap-2 px-4 pb-3"
-        >
-          <button
-            v-for="(action, index) in toast.actions"
-            :key="index"
-            class="px-3 py-1 text-sm cursor-pointer transition-colors border"
-            :style="{
-              color: getActionColor(action.style),
-              borderColor: theme.surface2,
-              backgroundColor: theme.surface0,
-            }"
-            @click="handleAction(toast, action)"
-            @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface2"
-            @mouseleave="($event.target as HTMLElement).style.backgroundColor = theme.surface0"
-          >
-            {{ action.label }}
-          </button>
-        </div>
-
-        <!-- Progress bar -->
-        <div
-          v-if="toast.duration > 0"
-          class="toast-progress h-0.5"
-          :style="{
-            backgroundColor: typeColors[toast.type],
-            animationDuration: `${toast.duration}ms`,
-          }"
-        ></div>
       </div>
     </TransitionGroup>
   </div>
@@ -132,18 +84,5 @@ function getActionColor(style: ToastAction['style']) {
 
 .toast-move {
   transition: transform 0.3s ease;
-}
-
-@keyframes toast-progress {
-  from {
-    width: 100%;
-  }
-  to {
-    width: 0%;
-  }
-}
-
-.toast-progress {
-  animation: toast-progress linear forwards;
 }
 </style>

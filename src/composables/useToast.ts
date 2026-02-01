@@ -1,23 +1,15 @@
 import { ref } from 'vue'
 
-export interface ToastAction {
-  label: string
-  handler: () => void
-  style?: 'primary' | 'danger' | 'default'
-}
-
 export interface Toast {
   id: number
   message: string
   type: 'success' | 'error' | 'info' | 'warning'
   duration: number
-  actions?: ToastAction[]
 }
 
 export interface ToastOptions {
   type?: Toast['type']
   duration?: number
-  actions?: ToastAction[]
 }
 
 const toasts = ref<Toast[]>([])
@@ -33,15 +25,13 @@ const DEFAULT_DURATIONS: Record<Toast['type'], number> = {
 export function useToast() {
   function show(message: string, options: ToastOptions = {}) {
     const type = options.type ?? 'info'
-    const hasActions = options.actions && options.actions.length > 0
-    const duration = hasActions ? 0 : (options.duration ?? DEFAULT_DURATIONS[type])
+    const duration = options.duration ?? DEFAULT_DURATIONS[type]
 
     const toast: Toast = {
       id: nextId++,
       message,
       type,
       duration,
-      actions: options.actions,
     }
 
     toasts.value.push(toast)
@@ -71,10 +61,6 @@ export function useToast() {
     return show(message, { type: 'warning', duration })
   }
 
-  function confirm(message: string, actions: ToastAction[]) {
-    return show(message, { type: 'info', actions })
-  }
-
   function dismiss(id: number) {
     const index = toasts.value.findIndex((t) => t.id === id)
     if (index !== -1) {
@@ -93,7 +79,6 @@ export function useToast() {
     error,
     info,
     warning,
-    confirm,
     dismiss,
     dismissAll,
   }
