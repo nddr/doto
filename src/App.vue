@@ -300,7 +300,7 @@ onUnmounted(() => {
         class="text-2xl"
         :style="{ color: theme.text }"
       >
-        {{ currentMonth }} <span :style="{ color: theme.overlay0 }">{{ currentYear }}</span>
+        {{ currentMonth }} <span class="text-xl" :style="{ color: theme.overlay0 }">{{ currentYear }}</span>
       </div>
 
       <!-- Tag Filter -->
@@ -503,13 +503,13 @@ onUnmounted(() => {
             @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
             @click="toggleAutoDuplicate(note.id)"
           >
-            <span class="mr-2" :style="{ color: theme.text }">Auto-Duplicate</span>
+            <span class="mr-4" :style="{ color: theme.text }">Auto-Duplicate</span>
             <div
-              class="w-10 h-5 relative rounded-full transition-colors"
+              class="w-10 h-5 relative transition-colors"
               :style="{ backgroundColor: note.autoDuplicate ? theme.mauve : theme.surface0 }"
             >
               <span
-                class="absolute top-0.5 w-4 h-4 rounded-full transition-all"
+                class="absolute top-0.5 w-4 h-4 transition-all"
                 :style="{
                   backgroundColor: theme.base,
                   left: note.autoDuplicate ? '22px' : '2px',
@@ -536,25 +536,8 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Left Gutter -->
-        <div class="flex flex-col items-center gap-4 px-4 -pt-2">
-          <!-- Tag Badge -->
-          <button
-            class="w-8 h-8 text-md flex items-center justify-center cursor-pointer border transition-colors"
-            :style="{
-              backgroundColor: theme.surface1,
-              borderColor: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.surface2),
-              color: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.overlay0),
-            }"
-            :title="`Tag: ${note.tags?.[0] || 'none'} (click to change)`"
-            @click="cycleNoteTag(note.id, note.tags)"
-          >
-            {{ getNoteTagBadge(note) }}
-          </button>
-        </div>
-
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col pr-6 pb-6">
+        <div class="flex-1 flex flex-col px-6 pb-6">
           <!-- Note Name -->
           <div class="flex items-center mb-3">
             <input
@@ -570,7 +553,7 @@ onUnmounted(() => {
           />
           <span
             v-else
-            class="cursor-text"
+            class="flex items-center cursor-text"
             :style="{ color: theme.lavender }"
             tabindex="0"
             role="button"
@@ -579,6 +562,19 @@ onUnmounted(() => {
             @keydown.enter="startEditingNote(note.id, note.name)"
             @keydown.space.prevent="startEditingNote(note.id, note.name)"
           >
+            <button
+              class="w-8 h-8 mr-4 text-md flex items-center justify-center cursor-pointer border transition-colors"
+              :style="{
+                backgroundColor: theme.surface1,
+                borderColor: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.surface2),
+                color: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.overlay0),
+              }"
+              :title="`Tag: ${note.tags?.[0] || 'none'} (click to change)`"
+              @click="cycleNoteTag(note.id, note.tags)"
+            >
+              {{ getNoteTagBadge(note) }}
+            </button>
+
             {{ note.name }}
           </span>
         </div>
