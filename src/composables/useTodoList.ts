@@ -1,4 +1,5 @@
 import { ref, watch } from 'vue'
+import { toLocalDateString, toLocalISOString } from '@/utils/date'
 
 export interface Note {
   id: number
@@ -76,7 +77,7 @@ let nextTodoId = initialIds.todoId
 
 // Auto-advance notes on load
 function advanceNotes() {
-  const today = new Date().toISOString().split('T')[0] ?? ''
+  const today = toLocalDateString()
 
   for (const note of notes.value) {
     if (note.autoAdvance && note.currentDate && note.currentDate < today) {
@@ -107,8 +108,8 @@ export function useTodoList() {
       id: nextNoteId++,
       name,
       todos: [],
-      createdAt: new Date().toISOString(),
-      currentDate: date ?? new Date().toISOString().split('T')[0],
+      createdAt: toLocalISOString(),
+      currentDate: date ?? toLocalDateString(),
       autoAdvance: true,
     })
   }
@@ -119,8 +120,8 @@ export function useTodoList() {
       id: nextNoteId++,
       name,
       content: '',
-      createdAt: new Date().toISOString(),
-      currentDate: date ?? new Date().toISOString().split('T')[0],
+      createdAt: toLocalISOString(),
+      currentDate: date ?? toLocalDateString(),
       autoAdvance: true,
     })
   }
@@ -162,7 +163,7 @@ export function useTodoList() {
         id: nextTodoId++,
         title,
         completed: false,
-        createdAt: new Date().toISOString(),
+        createdAt: toLocalISOString(),
       })
     }
   }
@@ -183,7 +184,7 @@ export function useTodoList() {
       const todo = note.todos.find((t) => t.id === todoId)
       if (todo) {
         todo.completed = !todo.completed
-        todo.completedAt = todo.completed ? new Date().toISOString() : undefined
+        todo.completedAt = todo.completed ? toLocalISOString() : undefined
       }
     }
   }

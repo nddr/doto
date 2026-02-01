@@ -4,6 +4,7 @@ import { useTodoList } from '@/composables/useTodoList'
 import { useTheme } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
+import { toLocalDateString } from '@/utils/date'
 import AppHeader from '@/components/AppHeader.vue'
 
 const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes } = useTodoList()
@@ -21,7 +22,7 @@ const dragOverDay = ref<string | null>(null)
 const draggedTodo = ref<{ noteId: number; todoIndex: number } | null>(null)
 const dragOverTodoIndex = ref<number | null>(null)
 const dragOverNoteId = ref<number | null>(null)
-const selectedDate = ref<string | null>(new Date().toISOString().split('T')[0] ?? null)
+const selectedDate = ref<string | null>(toLocalDateString())
 const tagFilter = ref<'all' | 'work' | 'personal'>('all')
 const weekOffset = ref(0)
 
@@ -48,13 +49,13 @@ const weekDates = computed(() => {
     date.setDate(monday.getDate() + i)
     return {
       ...day,
-      date: date.toISOString().split('T')[0] ?? '',
+      date: toLocalDateString(date),
       dayOfMonth: date.getDate(),
     }
   })
 })
 
-const todayDate = computed(() => new Date().toISOString().split('T')[0] ?? '')
+const todayDate = computed(() => toLocalDateString())
 
 const currentMonth = computed(() => {
   const today = new Date()
@@ -160,7 +161,7 @@ function handleAddTodo(noteId: number, event: Event) {
 }
 
 function handleAddTodoNote() {
-  const defaultName = new Date().toISOString().split('T')[0] ?? ''
+  const defaultName = toLocalDateString()
   addTodoNote(defaultName, selectedDate.value ?? undefined)
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
@@ -174,7 +175,7 @@ function handleAddTodoNote() {
 }
 
 function handleAddTextNote() {
-  const defaultName = new Date().toISOString().split('T')[0] ?? ''
+  const defaultName = toLocalDateString()
   addTextNote(defaultName, selectedDate.value ?? undefined)
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
