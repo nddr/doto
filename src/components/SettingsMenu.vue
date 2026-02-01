@@ -26,8 +26,8 @@ function closeMenu() {
   activeSubmenu.value = null
 }
 
-function handleExportAllNotes() {
-  exportAllNotesAsFile(notes.value)
+async function handleExportAllNotes() {
+  await exportAllNotesAsFile(notes.value)
   closeMenu()
 }
 
