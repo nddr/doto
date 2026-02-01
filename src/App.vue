@@ -98,6 +98,10 @@ function cycleNoteTag(noteId: number, currentTags?: string[]) {
   }
 }
 
+function isOldNote(note: typeof notes.value[0]): boolean {
+  return !!note.currentDate && note.currentDate < todayDate.value
+}
+
 function selectDay(date: string) {
   selectedDate.value = date
 }
@@ -461,7 +465,7 @@ onUnmounted(() => {
         :style="{
           borderColor: draggedIndex === index ? 'white' : (dragOverIndex === index ? theme.lavender : theme.surface1),
           backgroundColor: theme.surface0,
-          opacity: draggedIndex === index ? 0.5 : 1,
+          opacity: draggedIndex === index ? 0.5 : (isOldNote(note) ? 0.5 : 1),
         }"
         @dragover="handleDragOver"
         @dragenter="handleDragEnter(index)"
