@@ -5,7 +5,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 import AppHeader from '@/components/AppHeader.vue'
 
-const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, toggleAutoDuplicate, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo } = useTodoList()
+const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, toggleAutoDuplicate, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 
@@ -18,6 +18,7 @@ const dragOverIndex = ref<number | null>(null)
 const dragOverDay = ref<string | null>(null)
 const draggedTodo = ref<{ noteId: number; todoIndex: number } | null>(null)
 const dragOverTodoIndex = ref<number | null>(null)
+const dragOverNoteId = ref<number | null>(null)
 const selectedDate = ref<string | null>(new Date().toISOString().split('T')[0] ?? null)
 const tagFilter = ref<'all' | 'work' | 'personal'>('all')
 const weekOffset = ref(0)
@@ -242,10 +243,12 @@ function handleTodoDragStart(noteId: number, todoIndex: number, event: DragEvent
 function handleTodoDragEnd() {
   draggedTodo.value = null
   dragOverTodoIndex.value = null
+  dragOverNoteId.value = null
 }
 
 function handleTodoDragEnter(noteId: number, todoIndex: number) {
-  if (draggedTodo.value !== null && draggedTodo.value.noteId === noteId && draggedTodo.value.todoIndex !== todoIndex) {
+  if (draggedTodo.value !== null) {
+    dragOverNoteId.value = noteId
     dragOverTodoIndex.value = todoIndex
   }
 }
@@ -256,11 +259,23 @@ function handleTodoDragLeave() {
 
 function handleTodoDrop(noteId: number, toIndex: number, event: DragEvent) {
   event.stopPropagation()
-  if (draggedTodo.value !== null && draggedTodo.value.noteId === noteId && draggedTodo.value.todoIndex !== toIndex) {
-    moveTodo(noteId, draggedTodo.value.todoIndex, toIndex)
+  if (draggedTodo.value === null) return
+
+  const { noteId: fromNoteId, todoIndex: fromIndex } = draggedTodo.value
+
+  if (fromNoteId === noteId) {
+    // Same note: use existing moveTodo
+    if (fromIndex !== toIndex) {
+      moveTodo(noteId, fromIndex, toIndex)
+    }
+  } else {
+    // Different note: use new moveTodoBetweenNotes
+    moveTodoBetweenNotes(fromNoteId, noteId, fromIndex, toIndex)
   }
+
   draggedTodo.value = null
   dragOverTodoIndex.value = null
+  dragOverNoteId.value = null
 }
 
 function handleKeyboardShortcuts(event: KeyboardEvent) {
@@ -570,7 +585,7 @@ onUnmounted(() => {
                 color: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.overlay0),
               }"
               :title="`Tag: ${note.tags?.[0] || 'none'} (click to change)`"
-              @click="cycleNoteTag(note.id, note.tags)"
+              @click.stop="cycleNoteTag(note.id, note.tags)"
             >
               {{ getNoteTagBadge(note) }}
             </button>
@@ -595,7 +610,7 @@ onUnmounted(() => {
               :style="{
                 '--hover-bg': theme.surface1,
                 opacity: draggedTodo?.noteId === note.id && draggedTodo?.todoIndex === todoIndex ? 0.5 : 1,
-                borderTop: dragOverTodoIndex === todoIndex && draggedTodo?.noteId === note.id ? `2px solid ${theme.lavender}` : '2px solid transparent',
+                borderTop: dragOverTodoIndex === todoIndex && dragOverNoteId === note.id ? `2px solid ${theme.lavender}` : '2px solid transparent',
               }"
               @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface1"
               @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
@@ -650,6 +665,19 @@ onUnmounted(() => {
                 [x]
               </button>
             </div>
+
+            <!-- Drop zone for end of list -->
+            <div
+              v-if="draggedTodo && draggedTodo.noteId !== note.id"
+              class="h-8 transition-colors"
+              :style="{
+                borderTop: dragOverNoteId === note.id && dragOverTodoIndex === note.todos.length ? `2px solid ${theme.lavender}` : '2px solid transparent',
+              }"
+              @dragover="handleDragOver"
+              @dragenter="handleTodoDragEnter(note.id, note.todos.length)"
+              @dragleave="handleTodoDragLeave"
+              @drop="handleTodoDrop(note.id, note.todos.length, $event)"
+            ></div>
           </div>
 
           <!-- Add Todo Input -->

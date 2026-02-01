@@ -229,6 +229,28 @@ export function useTodoList() {
     }
   }
 
+  function moveTodoBetweenNotes(
+    fromNoteId: number,
+    toNoteId: number,
+    fromTodoIndex: number,
+    toTodoIndex: number
+  ) {
+    const fromNote = notes.value.find((n) => n.id === fromNoteId)
+    const toNote = notes.value.find((n) => n.id === toNoteId)
+    if (fromNote?.type !== 'todo' || toNote?.type !== 'todo') return
+    if (fromTodoIndex < 0 || fromTodoIndex >= fromNote.todos.length) return
+
+    const todoToMove = fromNote.todos[fromTodoIndex]
+    if (!todoToMove) return
+
+    // Remove from source note
+    fromNote.todos.splice(fromTodoIndex, 1)
+
+    // Insert into target note
+    const insertIndex = Math.min(toTodoIndex, toNote.todos.length)
+    toNote.todos.splice(insertIndex, 0, todoToMove)
+  }
+
   function updateNoteDate(noteId: number, date: string) {
     const note = notes.value.find((n) => n.id === noteId)
     if (note) {
@@ -282,5 +304,6 @@ export function useTodoList() {
     toggleTodo,
     renameTodo,
     moveTodo,
+    moveTodoBetweenNotes,
   }
 }
