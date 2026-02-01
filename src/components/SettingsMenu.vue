@@ -2,10 +2,18 @@
 import { useTheme, type ThemeName } from '@/composables/useTheme'
 import { useWeekLength, type WeekLength } from '@/composables/useWeekLength'
 import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
+import { useTodoList } from '@/composables/useTodoList'
+import { exportAllNotesAsFile } from '@/utils/export'
 
 const { theme, themeName, themeNames, themes, setTheme } = useTheme()
 const { weekLength, setWeekLength } = useWeekLength()
 const { showCreatedAt, setShowCreatedAt } = useShowCreatedAt()
+const { notes } = useTodoList()
+
+function handleExportAllNotes() {
+  exportAllNotesAsFile(notes.value)
+  document.getElementById('settings-menu')?.hidePopover()
+}
 </script>
 
 <template>
@@ -73,6 +81,19 @@ const { showCreatedAt, setShowCreatedAt } = useShowCreatedAt()
       @click="setShowCreatedAt(!showCreatedAt)"
     >
       [{{ showCreatedAt ? 'x' : ' ' }}] Show Dates
+    </button>
+
+    <!-- Export All Notes -->
+    <button
+      class="block w-full px-3 py-1 text-left cursor-pointer transition-colors"
+      :style="{
+        color: theme.text,
+      }"
+      @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+      @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
+      @click="handleExportAllNotes"
+    >
+      Export All Notes
     </button>
   </div>
 

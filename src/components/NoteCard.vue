@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, nextTick } from 'vue'
 import { useTheme } from '@/composables/useTheme'
+import { useToast } from '@/composables/useToast'
 import type { NoteType } from '@/composables/useTodoList'
+import { exportNoteAsFile, copyNoteToClipboard } from '@/utils/export'
 
 const props = defineProps<{
   note: NoteType
@@ -37,6 +39,7 @@ const emit = defineEmits<{
 }>()
 
 const { theme } = useTheme()
+const toast = useToast()
 
 // Local editing state
 const isEditingName = ref(false)
@@ -109,6 +112,23 @@ function cancelEditingTodo() {
   editingTodoTitle.value = ''
 }
 
+// Export functions
+function handleCopyAsMarkdown() {
+  copyNoteToClipboard(props.note).then((success) => {
+    if (success) {
+      toast.success('Copied to clipboard')
+    } else {
+      toast.error('Failed to copy')
+    }
+  })
+  document.getElementById(`note-menu-${props.note.id}`)?.hidePopover()
+}
+
+function handleExportAsMarkdown() {
+  exportNoteAsFile(props.note)
+  document.getElementById(`note-menu-${props.note.id}`)?.hidePopover()
+}
+
 // Expose startEditingNote so parent can trigger it for new notes
 defineExpose({
   startEditingNote,
@@ -170,6 +190,24 @@ defineExpose({
         borderColor: theme.surface2,
       }"
     >
+      <!-- Copy as Markdown -->
+      <div
+        class="flex items-center px-4 py-2 cursor-pointer transition-colors"
+        @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface2"
+        @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
+        @click="handleCopyAsMarkdown"
+      >
+        <span :style="{ color: theme.text }">Copy as Markdown</span>
+      </div>
+      <!-- Export as Markdown -->
+      <div
+        class="flex items-center px-4 py-2 cursor-pointer transition-colors"
+        @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface2"
+        @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
+        @click="handleExportAsMarkdown"
+      >
+        <span :style="{ color: theme.text }">Export as Markdown</span>
+      </div>
       <!-- Delete -->
       <div
         class="flex items-center px-4 py-2 cursor-pointer transition-colors"
