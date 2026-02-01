@@ -77,15 +77,23 @@ let nextTodoId = initialIds.todoId
 // Auto-advance notes on load
 function advanceNotes() {
   const today = new Date().toISOString().split('T')[0] ?? ''
-  const notesToAdd: NoteType[] = []
 
   for (const note of notes.value) {
     if (note.autoAdvance && note.currentDate && note.currentDate < today) {
-      note.currentDate = today
+      if (note.type === 'todo') {
+        // Only advance if there are incomplete todos
+        const hasIncompleteTodos = note.todos.some((todo) => !todo.completed)
+        if (hasIncompleteTodos) {
+          note.currentDate = today
+        }
+      } else if (note.type === 'text') {
+        // Only advance if content is not empty
+        if (note.content.trim()) {
+          note.currentDate = today
+        }
+      }
     }
   }
-
-  notes.value.push(...notesToAdd)
 }
 
 advanceNotes()
