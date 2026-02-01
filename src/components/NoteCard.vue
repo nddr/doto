@@ -206,8 +206,13 @@ defineExpose({
         @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
         @click="handleExportAsMarkdown"
       >
-        <span :style="{ color: theme.text }">Export as Markdown</span>
+        <span :style="{ color: theme.text }">Export to Markdown</span>
       </div>
+      <!-- Separator -->
+      <div
+        class="border-b mx-2 my-1"
+        :style="{ borderColor: theme.surface2 }"
+      ></div>
       <!-- Delete -->
       <div
         class="flex items-center px-4 py-2 cursor-pointer transition-colors"
