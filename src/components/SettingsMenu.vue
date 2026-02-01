@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useTheme, type ThemeName } from '@/composables/useTheme'
 import { useWeekLength, type WeekLength } from '@/composables/useWeekLength'
+import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
 
 const { theme, themeName, themeNames, themes, setTheme } = useTheme()
 const { weekLength, setWeekLength } = useWeekLength()
+const { showCreatedAt, setShowCreatedAt } = useShowCreatedAt()
 </script>
 
 <template>
@@ -58,6 +60,19 @@ const { weekLength, setWeekLength } = useWeekLength()
       style="anchor-name: --week-trigger"
     >
       Week >
+    </button>
+
+    <!-- Show Dates Toggle -->
+    <button
+      class="block w-full px-3 py-1 text-left cursor-pointer transition-colors"
+      :style="{
+        color: theme.text,
+      }"
+      @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+      @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
+      @click="setShowCreatedAt(!showCreatedAt)"
+    >
+      [{{ showCreatedAt ? 'x' : ' ' }}] Show Dates
     </button>
   </div>
 

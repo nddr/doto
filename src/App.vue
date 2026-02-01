@@ -3,11 +3,13 @@ import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useTodoList } from '@/composables/useTodoList'
 import { useTheme } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
+import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
 import AppHeader from '@/components/AppHeader.vue'
 
 const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength()
+const { showCreatedAt } = useShowCreatedAt()
 
 const editingNoteId = ref<number | null>(null)
 const editingName = ref('')
@@ -685,6 +687,15 @@ onUnmounted(() => {
             }"
           ></textarea>
         </div>
+
+        <!-- Created Date -->
+        <span
+          v-if="showCreatedAt && note.createdAt"
+          class="absolute bottom-2 right-4 text-xs"
+          :style="{ color: theme.overlay0 }"
+        >
+          {{ note.createdAt.split('T')[0] }}
+        </span>
         </div>
       </div>
 
