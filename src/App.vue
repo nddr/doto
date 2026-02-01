@@ -6,6 +6,7 @@ import { useWeekLength } from '@/composables/useWeekLength'
 import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
 import { toLocalDateString } from '@/utils/date'
 import AppHeader from '@/components/AppHeader.vue'
+import ToastContainer from '@/components/ToastContainer.vue'
 
 const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes } = useTodoList()
 const { theme } = useTheme()
@@ -725,5 +726,7 @@ onUnmounted(() => {
         </button>
       </div>
     </div>
+
+    <ToastContainer />
   </main>
 </template>
