@@ -205,9 +205,15 @@ function handleDayDrop(date: string) {
 
   // Only show dialog for TaskNotes
   if (note.type === 'task') {
+    const targetDate = new Date(date + 'T00:00:00')
+    const formattedDate = targetDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+    })
     openDialog({
       title: 'Keep a copy?',
-      message: `Moving "${note.name}" to a new day.`,
+      message: `Moving "${note.name}" to ${formattedDate}. Would you like to keep a copy here as well?`,
       actions: [
         {
           label: 'No',
@@ -219,7 +225,7 @@ function handleDayDrop(date: string) {
         },
         {
           label: 'Yes',
-          style: 'primary',
+          style: 'default',
           handler: () => {
             duplicateTaskNote(note.id, date)
             closeDialog()

@@ -23,11 +23,20 @@ function handleAction(action: DialogAction) {
 function getActionColor(style: DialogAction['style']) {
   switch (style) {
     case 'primary':
-      return theme.value.blue
+      return '#ffffff'
     case 'danger':
       return theme.value.red
     default:
       return theme.value.text
+  }
+}
+
+function getActionBgColor(style: DialogAction['style']) {
+  switch (style) {
+    case 'primary':
+      return theme.value.blue
+    default:
+      return theme.value.surface1
   }
 }
 
@@ -39,7 +48,7 @@ function handleCancel() {
 <template>
   <dialog
     ref="dialogRef"
-    class="p-0 border backdrop:bg-black/50"
+    class="p-0 m-auto border backdrop:bg-black/50 focus:outline-none"
     :style="{
       backgroundColor: theme.surface0,
       borderColor: theme.surface2,
@@ -47,7 +56,7 @@ function handleCancel() {
     }"
     @cancel="handleCancel"
   >
-    <div v-if="currentOptions" class="min-w-80 max-w-md">
+    <div v-if="currentOptions" class="min-w-96 max-w-lg">
       <!-- Title -->
       <div
         class="px-6 py-4 border-b"
@@ -65,21 +74,19 @@ function handleCancel() {
 
       <!-- Actions -->
       <div
-        class="flex justify-end gap-2 px-6 py-4 border-t"
+        class="flex gap-3 px-6 py-4 border-t"
         :style="{ borderColor: theme.surface2 }"
       >
         <button
           v-for="(action, index) in currentOptions.actions"
           :key="index"
-          class="px-4 py-2 text-sm cursor-pointer transition-colors border"
+          class="flex-1 px-4 py-2 text-sm cursor-pointer transition-colors border"
           :style="{
             color: getActionColor(action.style),
             borderColor: theme.surface2,
-            backgroundColor: theme.surface1,
+            backgroundColor: getActionBgColor(action.style),
           }"
           @click="handleAction(action)"
-          @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface2"
-          @mouseleave="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
         >
           {{ action.label }}
         </button>
