@@ -13,7 +13,7 @@ import TagFilter from '@/components/TagFilter.vue'
 import DayFilter from '@/components/DayFilter.vue'
 import NoteCard from '@/components/NoteCard.vue'
 
-const { notes, addTaskNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes, duplicateTaskNote } = useTodoList()
+const { notes, addTaskNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes, duplicateTaskNote, moveTodoToDate } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 const { showCreatedAt } = useShowCreatedAt()
@@ -182,7 +182,7 @@ function handleDrop(toIndex: number) {
 }
 
 function handleDayDragEnter(date: string) {
-  if (draggedIndex.value !== null) {
+  if (draggedIndex.value !== null || draggedTodo.value !== null) {
     dragOverDay.value = date
   }
 }
@@ -192,6 +192,20 @@ function handleDayDragLeave() {
 }
 
 function handleDayDrop(date: string) {
+  // Handle todo drop
+  if (draggedTodo.value !== null) {
+    const { noteId, todoIndex } = draggedTodo.value
+    moveTodoToDate(noteId, todoIndex, date)
+
+    // Clear drag state
+    draggedTodo.value = null
+    dragOverTodoIndex.value = null
+    dragOverNoteId.value = null
+    dragOverDay.value = null
+    return
+  }
+
+  // Handle note drop
   if (draggedIndex.value === null) return
 
   const note = filteredNotes.value[draggedIndex.value]
@@ -248,6 +262,7 @@ function handleTodoDragEnd() {
   draggedTodo.value = null
   dragOverTodoIndex.value = null
   dragOverNoteId.value = null
+  dragOverDay.value = null
 }
 
 function handleTodoDragEnter(noteId: number, todoIndex: number) {

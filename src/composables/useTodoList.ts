@@ -289,6 +289,47 @@ export function useTodoList() {
     })
   }
 
+  function moveTodoToDate(
+    fromNoteId: number,
+    todoIndex: number,
+    targetDate: string,
+  ): void {
+    const fromNote = notes.value.find((n) => n.id === fromNoteId)
+    if (fromNote?.type !== 'task') return
+    if (todoIndex < 0 || todoIndex >= fromNote.todos.length) return
+
+    const todoToMove = fromNote.todos[todoIndex]
+    if (!todoToMove) return
+
+    // Find first TaskNote on target date
+    let targetNote = notes.value.find(
+      (n) => n.type === 'task' && n.currentDate === targetDate,
+    )
+
+    // If no TaskNote exists, create one with default name (the date)
+    if (!targetNote) {
+      const newNote: TaskNote = {
+        type: 'task',
+        id: nextNoteId++,
+        name: targetDate,
+        todos: [],
+        createdAt: toLocalISOString(),
+        currentDate: targetDate,
+        autoAdvance: true,
+      }
+      notes.value.push(newNote)
+      targetNote = newNote
+    }
+
+    // Remove from source
+    fromNote.todos.splice(todoIndex, 1)
+
+    // Add to target (at the end)
+    if (targetNote.type === 'task') {
+      targetNote.todos.push(todoToMove)
+    }
+  }
+
   return {
     notes,
     addTaskNote,
@@ -307,5 +348,6 @@ export function useTodoList() {
     moveTodo,
     moveTodoBetweenNotes,
     duplicateTaskNote,
+    moveTodoToDate,
   }
 }
