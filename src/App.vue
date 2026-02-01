@@ -4,6 +4,7 @@ import { useTodoList } from '@/composables/useTodoList'
 import { useTheme } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
+import { useDialog } from '@/composables/useDialog'
 import { toLocalDateString } from '@/utils/date'
 import AppHeader from '@/components/AppHeader.vue'
 import ToastContainer from '@/components/ToastContainer.vue'
@@ -12,10 +13,11 @@ import TagFilter from '@/components/TagFilter.vue'
 import DayFilter from '@/components/DayFilter.vue'
 import NoteCard from '@/components/NoteCard.vue'
 
-const { notes, addTaskNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes } = useTodoList()
+const { notes, addTaskNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes, duplicateTaskNote } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 const { showCreatedAt } = useShowCreatedAt()
+const { open: openDialog, close: closeDialog } = useDialog()
 
 // Template refs for NoteCard instances
 const noteCardRefs = ref<Record<number, InstanceType<typeof NoteCard>>>({})
@@ -190,15 +192,45 @@ function handleDayDragLeave() {
 }
 
 function handleDayDrop(date: string) {
-  if (draggedIndex.value !== null) {
-    const note = filteredNotes.value[draggedIndex.value]
-    if (note) {
-      updateNoteDate(note.id, date)
-    }
-  }
+  if (draggedIndex.value === null) return
+
+  const note = filteredNotes.value[draggedIndex.value]
+
+  // Reset drag state immediately
   draggedIndex.value = null
   dragOverIndex.value = null
   dragOverDay.value = null
+
+  if (!note) return
+
+  // Only show dialog for TaskNotes
+  if (note.type === 'task') {
+    openDialog({
+      title: 'Keep a copy?',
+      message: `Moving "${note.name}" to a new day.`,
+      actions: [
+        {
+          label: 'No',
+          style: 'default',
+          handler: () => {
+            updateNoteDate(note.id, date)
+            closeDialog()
+          },
+        },
+        {
+          label: 'Yes',
+          style: 'primary',
+          handler: () => {
+            duplicateTaskNote(note.id, date)
+            closeDialog()
+          },
+        },
+      ],
+    })
+  } else {
+    // TextNotes move without dialog
+    updateNoteDate(note.id, date)
+  }
 }
 
 function handleTodoDragStart(noteId: number, todoIndex: number, event: DragEvent) {

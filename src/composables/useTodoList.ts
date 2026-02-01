@@ -264,6 +264,31 @@ export function useTodoList() {
     }
   }
 
+  function duplicateTaskNote(noteId: number, targetDate: string) {
+    const sourceNote = notes.value.find((n) => n.id === noteId)
+    if (!sourceNote || sourceNote.type !== 'task') return
+
+    const incompleteTodos = sourceNote.todos
+      .filter((t) => !t.completed)
+      .map((t) => ({
+        id: nextTodoId++,
+        title: t.title,
+        completed: false,
+        createdAt: toLocalISOString(),
+      }))
+
+    notes.value.push({
+      type: 'task',
+      id: nextNoteId++,
+      name: sourceNote.name,
+      currentDate: targetDate,
+      createdAt: toLocalISOString(),
+      tags: sourceNote.tags ? [...sourceNote.tags] : undefined,
+      autoAdvance: sourceNote.autoAdvance,
+      todos: incompleteTodos,
+    })
+  }
+
   return {
     notes,
     addTaskNote,
@@ -281,5 +306,6 @@ export function useTodoList() {
     renameTodo,
     moveTodo,
     moveTodoBetweenNotes,
+    duplicateTaskNote,
   }
 }
