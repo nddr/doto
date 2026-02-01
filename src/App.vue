@@ -5,7 +5,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 import AppHeader from '@/components/AppHeader.vue'
 
-const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, toggleAutoDuplicate, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes } = useTodoList()
+const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 
@@ -510,36 +510,6 @@ onUnmounted(() => {
             borderColor: theme.surface2,
           }"
         >
-          <!-- Auto-Duplicate (TodoNotes only) -->
-          <div
-            v-if="note.type === 'todo'"
-            class="flex items-center justify-between px-4 py-2 cursor-pointer transition-colors"
-            @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface2"
-            @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
-            @click="toggleAutoDuplicate(note.id)"
-          >
-            <span class="mr-4" :style="{ color: theme.text }">Auto-Duplicate</span>
-            <div
-              class="w-10 h-5 relative transition-colors"
-              :style="{ backgroundColor: note.autoDuplicate ? theme.mauve : theme.surface0 }"
-            >
-              <span
-                class="absolute top-0.5 w-4 h-4 transition-all"
-                :style="{
-                  backgroundColor: theme.base,
-                  left: note.autoDuplicate ? '22px' : '2px',
-                }"
-              ></span>
-            </div>
-          </div>
-
-          <!-- Divider (only show if todo note) -->
-          <div
-            v-if="note.type === 'todo'"
-            class="border-t"
-            :style="{ borderColor: theme.surface2 }"
-          ></div>
-
           <!-- Delete -->
           <div
             class="flex items-center px-4 py-2 cursor-pointer transition-colors"

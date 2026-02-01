@@ -12,7 +12,6 @@ export interface Note {
 export interface TodoNote extends Note {
   type: 'todo'
   todos: Todo[]
-  autoDuplicate?: boolean
 }
 
 export interface TextNote extends Note {
@@ -82,33 +81,7 @@ function advanceNotes() {
 
   for (const note of notes.value) {
     if (note.autoAdvance && note.currentDate && note.currentDate < today) {
-      if (note.type === 'todo' && note.autoDuplicate) {
-        // Create duplicate with incomplete todos only
-        const incompleteTodos = note.todos
-          .filter((t) => !t.completed)
-          .map((t) => ({
-            id: nextTodoId++,
-            title: t.title,
-            completed: false,
-            createdAt: new Date().toISOString(),
-          }))
-
-        notesToAdd.push({
-          type: 'todo',
-          id: nextNoteId++,
-          name: note.name,
-          todos: incompleteTodos,
-          createdAt: new Date().toISOString(),
-          currentDate: today,
-          tags: note.tags ? [...note.tags] : undefined,
-          autoAdvance: true,
-          autoDuplicate: true,
-        })
-        // Original note stays unchanged (historical record)
-      } else {
-        // Standard autoAdvance behavior
-        note.currentDate = today
-      }
+      note.currentDate = today
     }
   }
 
@@ -273,17 +246,6 @@ export function useTodoList() {
     const note = notes.value.find((n) => n.id === noteId)
     if (note) {
       note.autoAdvance = !note.autoAdvance
-      // When disabling autoAdvance, also disable autoDuplicate
-      if (!note.autoAdvance && note.type === 'todo') {
-        note.autoDuplicate = false
-      }
-    }
-  }
-
-  function toggleAutoDuplicate(noteId: number) {
-    const note = notes.value.find((n) => n.id === noteId)
-    if (note && note.type === 'todo') {
-      note.autoDuplicate = !note.autoDuplicate
     }
   }
 
@@ -298,7 +260,6 @@ export function useTodoList() {
     updateNoteDate,
     updateNoteTag,
     toggleAutoAdvance,
-    toggleAutoDuplicate,
     addTodo,
     removeTodo,
     toggleTodo,
