@@ -76,7 +76,9 @@ const { theme } = useTheme()
           :style="{ backgroundColor: theme.base }"
         ></span>
       </span>
-      <span :style="{ color: modelValue === 'personal' ? theme.peach : theme.overlay0 }">Personal</span>
+      <span :style="{ color: modelValue === 'personal' ? theme.peach : theme.overlay0 }"
+        >Personal</span
+      >
       <input
         type="radio"
         name="tagFilter"

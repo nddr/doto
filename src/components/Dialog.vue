@@ -56,7 +56,10 @@ function handleCancel() {
     }"
     @cancel="handleCancel"
   >
-    <div v-if="currentOptions" class="min-w-96 max-w-lg">
+    <div
+      v-if="currentOptions"
+      class="min-w-96 max-w-lg"
+    >
       <!-- Title -->
       <div
         class="px-6 py-4 border-b"
@@ -67,7 +70,10 @@ function handleCancel() {
 
       <!-- Message -->
       <div class="px-6 py-4">
-        <p class="text-sm" :style="{ color: theme.subtext0 }">
+        <p
+          class="text-sm"
+          :style="{ color: theme.subtext0 }"
+        >
           {{ currentOptions.message }}
         </p>
       </div>

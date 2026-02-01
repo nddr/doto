@@ -334,7 +334,12 @@ onUnmounted(() => {
         class="text-2xl"
         :style="{ color: theme.text }"
       >
-        {{ currentMonth }} <span class="text-xl" :style="{ color: theme.overlay0 }">{{ currentYear }}</span>
+        {{ currentMonth }}
+        <span
+          class="text-xl"
+          :style="{ color: theme.overlay0 }"
+          >{{ currentYear }}</span
+        >
       </div>
 
       <!-- Tag Filter -->

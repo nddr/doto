@@ -26,11 +26,7 @@ export function useDialog() {
     currentOptions.value = null
   }
 
-  function confirm(
-    message: string,
-    onConfirm: () => void,
-    onCancel?: () => void
-  ) {
+  function confirm(message: string, onConfirm: () => void, onCancel?: () => void) {
     open({
       title: 'Confirm',
       message,
