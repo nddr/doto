@@ -10,9 +10,8 @@ Doto is a Vue 3 + TypeScript single-page application using the Composition API w
 
 ```bash
 # Development
-pnpm dev              # Start dev server (http://localhost:5173)
-pnpm test:unit        # Run unit tests with Vitest
-pnpm type-check       # Type-check with vue-tsc
+pnpm dev                        # Start dev server (http://localhost:5173)
+pnpm type-check                 # Type-check with vue-tsc
 
 # Building
 pnpm build            # Type-check + compile for production
@@ -36,6 +35,23 @@ pnpm lint:oxlint      # Run Oxlint with auto-fix
 - **Entry:** `index.html` → `src/main.ts` → `App.vue`
 - **Routing:** Vue Router configured in `src/router/index.ts`
 - **Styling:** Tailwind CSS v4 via Vite plugin, global styles in `src/assets/css/style.css`
+
+## State Management
+
+No external state library—uses Vue reactivity + localStorage persistence.
+
+**Composables** (`src/composables/`):
+- `useTodoList` - Central data store for notes/todos, persists to localStorage
+- `useTheme`, `useWeekLength`, `useShowCreatedAt` - User preferences (localStorage-backed)
+- `useDialog`, `useToast` - UI state for modals and notifications
+
+## Data Model
+
+Two note types defined in `useTodoList.ts`:
+- `TaskNote` - Has `todos: Todo[]` array with id, title, completed, timestamps
+- `TextNote` - Has `content: string` for freeform text
+
+Both share: `id`, `name`, `createdAt`, `currentDate`, `tags`, `autoAdvance`
 
 ## Environment Variables
 
