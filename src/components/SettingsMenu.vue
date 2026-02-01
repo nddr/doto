@@ -45,7 +45,7 @@ const { showCreatedAt, setShowCreatedAt } = useShowCreatedAt()
       @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
       style="anchor-name: --theme-trigger"
     >
-      Theme >
+      Theme
     </button>
 
     <!-- Week Length Sub-menu Trigger -->
@@ -59,7 +59,7 @@ const { showCreatedAt, setShowCreatedAt } = useShowCreatedAt()
       @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
       style="anchor-name: --week-trigger"
     >
-      Week >
+      Week Length
     </button>
 
     <!-- Show Dates Toggle -->
