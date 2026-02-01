@@ -7,16 +7,18 @@ import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
 import { toLocalDateString } from '@/utils/date'
 import AppHeader from '@/components/AppHeader.vue'
 import ToastContainer from '@/components/ToastContainer.vue'
+import TagFilter from '@/components/TagFilter.vue'
+import DayFilter from '@/components/DayFilter.vue'
+import NoteCard from '@/components/NoteCard.vue'
 
 const { notes, addTaskNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 const { showCreatedAt } = useShowCreatedAt()
 
-const editingNoteId = ref<number | null>(null)
-const editingName = ref('')
-const editingTodoKey = ref<{ noteId: number; todoId: number } | null>(null)
-const editingTodoTitle = ref('')
+// Template refs for NoteCard instances
+const noteCardRefs = ref<Record<number, InstanceType<typeof NoteCard>>>({})
+
 const draggedIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
 const dragOverDay = ref<string | null>(null)
@@ -85,10 +87,12 @@ const filteredNotes = computed(() => {
   return result
 })
 
-function getNoteTagBadge(note: typeof notes.value[0]): string {
-  if (note.tags?.includes('work')) return 'W'
-  if (note.tags?.includes('personal')) return 'P'
-  return '*'
+function setNoteCardRef(noteId: number, el: InstanceType<typeof NoteCard> | null) {
+  if (el) {
+    noteCardRefs.value[noteId] = el
+  } else {
+    delete noteCardRefs.value[noteId]
+  }
 }
 
 function cycleNoteTag(noteId: number, currentTags?: string[]) {
@@ -106,59 +110,12 @@ function isOldNote(note: typeof notes.value[0]): boolean {
   return !!note.currentDate && note.currentDate < todayDate.value
 }
 
-function selectDay(date: string) {
-  selectedDate.value = date
-}
-
 function goToPreviousWeek() {
   weekOffset.value--
 }
 
 function goToNextWeek() {
   weekOffset.value++
-}
-
-function startEditingNote(noteId: number, currentName: string) {
-  editingNoteId.value = noteId
-  editingName.value = currentName
-  nextTick(() => {
-    const input = document.querySelector(`[data-note-input="${noteId}"]`) as HTMLInputElement
-    input?.focus()
-    input?.select()
-  })
-}
-
-function saveNoteName(noteId: number) {
-  if (editingName.value.trim()) {
-    renameNote(noteId, editingName.value.trim())
-  }
-  editingNoteId.value = null
-  editingName.value = ''
-}
-
-function startEditingTodo(noteId: number, todoId: number, currentTitle: string) {
-  editingTodoKey.value = { noteId, todoId }
-  editingTodoTitle.value = currentTitle
-  nextTick(() => {
-    const input = document.querySelector(`[data-todo-input="${noteId}-${todoId}"]`) as HTMLInputElement
-    input?.focus()
-    input?.select()
-  })
-}
-
-function saveTodoTitle(noteId: number, todoId: number) {
-  if (editingTodoTitle.value.trim()) {
-    renameTodo(noteId, todoId, editingTodoTitle.value.trim())
-  }
-  editingTodoKey.value = null
-  editingTodoTitle.value = ''
-}
-
-function handleAddTodo(noteId: number, event: Event) {
-  const input = event.target as HTMLInputElement
-  if (!input.value.trim()) return
-  addTodo(noteId, input.value.trim())
-  input.value = ''
 }
 
 function handleAddTaskNote() {
@@ -170,7 +127,9 @@ function handleAddTaskNote() {
       if (tagFilter.value !== 'all') {
         updateNoteTag(newNote.id, tagFilter.value)
       }
-      startEditingNote(newNote.id, newNote.name)
+      nextTick(() => {
+        noteCardRefs.value[newNote.id]?.startEditingNote()
+      })
     }
   })
 }
@@ -184,7 +143,9 @@ function handleAddTextNote() {
       if (tagFilter.value !== 'all') {
         updateNoteTag(newNote.id, tagFilter.value)
       }
-      startEditingNote(newNote.id, newNote.name)
+      nextTick(() => {
+        noteCardRefs.value[newNote.id]?.startEditingNote()
+      })
     }
   })
 }
@@ -197,10 +158,6 @@ function handleDragEnd() {
   draggedIndex.value = null
   dragOverIndex.value = null
   dragOverDay.value = null
-}
-
-function handleDragOver(event: DragEvent) {
-  event.preventDefault()
 }
 
 function handleDragEnter(index: number) {
@@ -327,379 +284,56 @@ onUnmounted(() => {
       </div>
 
       <!-- Tag Filter -->
-      <div class="flex gap-4 text-sm">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <span
-            class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
-            :style="{
-            borderColor: tagFilter === 'all' ? theme.lavender : theme.overlay0,
-            backgroundColor: tagFilter === 'all' ? theme.lavender : 'transparent',
-          }"
-          >
-            <span
-              v-if="tagFilter === 'all'"
-              class="w-1.5 h-1.5 rounded-full"
-              :style="{ backgroundColor: theme.base }"
-            ></span>
-          </span>
-          <span :style="{ color: tagFilter === 'all' ? theme.lavender : theme.overlay0 }">All</span>
-          <input
-            type="radio"
-            name="tagFilter"
-            value="all"
-            v-model="tagFilter"
-            class="sr-only"
-          />
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <span
-            class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
-            :style="{
-            borderColor: tagFilter === 'work' ? theme.green : theme.overlay0,
-            backgroundColor: tagFilter === 'work' ? theme.green : 'transparent',
-          }"
-          >
-            <span
-              v-if="tagFilter === 'work'"
-              class="w-1.5 h-1.5 rounded-full"
-              :style="{ backgroundColor: theme.base }"
-            ></span>
-          </span>
-          <span :style="{ color: tagFilter === 'work' ? theme.green : theme.overlay0 }">Work</span>
-          <input
-            type="radio"
-            name="tagFilter"
-            value="work"
-            v-model="tagFilter"
-            class="sr-only"
-          />
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-          <span
-            class="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors"
-            :style="{
-            borderColor: tagFilter === 'personal' ? theme.peach : theme.overlay0,
-            backgroundColor: tagFilter === 'personal' ? theme.peach : 'transparent',
-          }"
-          >
-            <span
-              v-if="tagFilter === 'personal'"
-              class="w-1.5 h-1.5 rounded-full"
-              :style="{ backgroundColor: theme.base }"
-            ></span>
-          </span>
-          <span :style="{ color: tagFilter === 'personal' ? theme.peach : theme.overlay0 }"
-            >Personal</span
-          >
-          <input
-            type="radio"
-            name="tagFilter"
-            value="personal"
-            v-model="tagFilter"
-            class="sr-only"
-          />
-        </label>
-      </div>
+      <TagFilter v-model="tagFilter" />
     </div>
 
     <!-- Day Filter -->
-    <div class="flex gap-2 mb-4">
-      <button
-        class="py-2 px-2 border text-center cursor-pointer transition-colors"
-        :style="{
-          backgroundColor: theme.surface0,
-          borderColor: theme.surface1,
-          color: theme.overlay0,
-        }"
-        @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
-        @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
-        @click="goToPreviousWeek"
-      >
-        &lt;
-      </button>
-      <button
-        v-for="day in weekDates"
-        :key="day.date"
-        class="flex-1 py-2 px-1 border text-center cursor-pointer transition-colors"
-        :style="{
-          backgroundColor: selectedDate === day.date ? theme.surface1 : theme.surface0,
-          borderColor: dragOverDay === day.date ? theme.lavender : (selectedDate === day.date ? theme.lavender : theme.surface1),
-          color: selectedDate === day.date ? theme.lavender : (day.date === todayDate ? theme.text : theme.overlay0),
-        }"
-        @click="selectDay(day.date)"
-        @dragover="handleDragOver"
-        @dragenter="handleDayDragEnter(day.date)"
-        @dragleave="handleDayDragLeave"
-        @drop="handleDayDrop(day.date)"
-      >
-        <span class="md:hidden flex flex-col items-center"
-          ><span>{{ day.letter }}</span
-          ><span class="opacity-50 text-sm">{{ day.dayOfMonth }}</span></span
-        >
-        <span class="hidden md:inline xl:hidden"
-          ><span class="opacity-50">{{ day.dayOfMonth }}</span>
-          {{ day.short
-          }}</span
-        >
-        <span class="hidden xl:inline"
-          ><span class="opacity-50">{{ day.dayOfMonth }}</span> {{ day.full }}</span
-        >
-      </button>
-      <button
-        class="py-2 px-2 border text-center cursor-pointer transition-colors"
-        :style="{
-          backgroundColor: theme.surface0,
-          borderColor: theme.surface1,
-          color: theme.overlay0,
-        }"
-        @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
-        @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
-        @click="goToNextWeek"
-      >
-        &gt;
-      </button>
-    </div>
+    <DayFilter
+      v-model="selectedDate"
+      :week-dates="weekDates"
+      :today-date="todayDate"
+      :drag-over-day="dragOverDay"
+      @previous-week="goToPreviousWeek"
+      @next-week="goToNextWeek"
+      @day-drag-enter="handleDayDragEnter"
+      @day-drag-leave="handleDayDragLeave"
+      @day-drop="handleDayDrop"
+    />
 
     <div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 4xl:grid-cols-4 gap-4">
       <!-- Note Cards -->
-      <div
+      <NoteCard
         v-for="(note, index) in filteredNotes"
         :key="note.id"
-        class="relative flex-1 min-w-[calc(25%-12px)] max-w-full border pt-8 transition-colors flex"
-        :style="{
-          borderColor: draggedIndex === index ? 'white' : (dragOverIndex === index ? theme.lavender : theme.surface1),
-          backgroundColor: theme.surface0,
-          opacity: draggedIndex === index ? 0.5 : (isOldNote(note) ? 0.5 : 1),
-        }"
-        @dragover="handleDragOver"
-        @dragenter="handleDragEnter(index)"
-        @dragleave="handleDragLeave"
-        @drop="handleDrop(index)"
-      >
-        <!-- Drag Handle -->
-        <div
-          class="absolute top-2 left-[calc(50%-12px)] flex justify-center py-1 px-4 cursor-grab"
-          draggable="true"
-          @dragstart="handleDragStart(index)"
-          @dragend="handleDragEnd"
-        >
-          <div class="flex flex-col gap-1">
-            <div
-              class="w-10 h-0.5 rounded"
-              :style="{ backgroundColor: theme.overlay0 }"
-            ></div>
-            <div
-              class="w-10 h-0.5 rounded"
-              :style="{ backgroundColor: theme.overlay0 }"
-            ></div>
-          </div>
-        </div>
-
-        <!-- Menu Button -->
-        <button
-          class="absolute top-3 right-4 flex items-center justify-center w-6 h-6 text-2xl cursor-pointer transition-colors"
-          :style="{ color: theme.overlay0 }"
-          :popovertarget="`note-menu-${note.id}`"
-          :aria-label="`Menu for ${note.name}`"
-          @click="($event.target as HTMLElement).style.setProperty('anchor-name', '--note-menu')"
-          @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
-          @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
-        >
-          ⋮
-        </button>
-
-        <!-- Dropdown Menu -->
-        <div
-          :id="`note-menu-${note.id}`"
-          popover
-          class="note-menu-popover min-w-48 border shadow-lg"
-          :style="{
-            backgroundColor: theme.surface1,
-            borderColor: theme.surface2,
-          }"
-        >
-          <!-- Delete -->
-          <div
-            class="flex items-center px-4 py-2 cursor-pointer transition-colors"
-            @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface2"
-            @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
-            @click="removeNote(note.id)"
-          >
-            <span :style="{ color: theme.red }">Delete</span>
-          </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col px-6 pb-6">
-          <!-- Note Name -->
-          <div class="flex items-center mb-3">
-            <input
-            v-if="editingNoteId === note.id"
-            v-model="editingName"
-            :data-note-input="note.id"
-            class="w-full bg-transparent outline-none border-b"
-            :style="{ color: theme.lavender, borderColor: theme.lavender }"
-            :aria-label="`Edit name for ${note.name}`"
-            @blur="saveNoteName(note.id)"
-            @keydown.enter="saveNoteName(note.id)"
-            @keydown.escape="editingNoteId = null"
-          />
-          <span
-            v-else
-            class="flex items-center cursor-text"
-            :style="{ color: theme.lavender }"
-            tabindex="0"
-            role="button"
-            :aria-label="`Edit ${note.name}`"
-            @click="startEditingNote(note.id, note.name)"
-            @keydown.enter="startEditingNote(note.id, note.name)"
-            @keydown.space.prevent="startEditingNote(note.id, note.name)"
-          >
-            <button
-              class="w-8 h-8 mr-4 text-md flex items-center justify-center cursor-pointer border transition-colors"
-              :style="{
-                backgroundColor: theme.surface1,
-                borderColor: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.surface2),
-                color: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.overlay0),
-              }"
-              :title="`Tag: ${note.tags?.[0] || 'none'} (click to change)`"
-              @click.stop="cycleNoteTag(note.id, note.tags)"
-            >
-              {{ getNoteTagBadge(note) }}
-            </button>
-
-            {{ note.name }}
-          </span>
-        </div>
-
-        <!-- Separator -->
-        <div
-          class="border-b mb-3"
-          :style="{ borderColor: theme.surface1 }"
-        ></div>
-
-        <!-- Todo List Content -->
-        <template v-if="note.type === 'task'">
-          <div class="space-y-1">
-            <div
-              v-for="(todo, todoIndex) in note.todos"
-              :key="todo.id"
-              class="group flex items-start gap-2 px-1 -mx-1 transition-colors"
-              :style="{
-                '--hover-bg': theme.surface1,
-                opacity: draggedTodo?.noteId === note.id && draggedTodo?.todoIndex === todoIndex ? 0.5 : 1,
-                borderTop: dragOverTodoIndex === todoIndex && dragOverNoteId === note.id ? `2px solid ${theme.lavender}` : '2px solid transparent',
-              }"
-              @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface1"
-              @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
-              @dragover="handleDragOver"
-              @dragenter="handleTodoDragEnter(note.id, todoIndex)"
-              @dragleave="handleTodoDragLeave"
-              @drop="handleTodoDrop(note.id, todoIndex, $event)"
-            >
-              <span
-                class="cursor-grab select-none"
-                :style="{ color: theme.overlay0 }"
-                draggable="true"
-                @dragstart="handleTodoDragStart(note.id, todoIndex, $event)"
-                @dragend="handleTodoDragEnd"
-              >
-                ::
-              </span>
-              <span
-                class="cursor-pointer select-none"
-                :style="{ color: todo.completed ? theme.surface2 : theme.green }"
-                @click="toggleTodo(note.id, todo.id)"
-              >
-                [{{ todo.completed ? 'x' : ' ' }}]
-              </span>
-              <input
-                v-if="editingTodoKey?.noteId === note.id && editingTodoKey?.todoId === todo.id"
-                v-model="editingTodoTitle"
-                :data-todo-input="`${note.id}-${todo.id}`"
-                class="flex-1 min-w-0 bg-transparent outline-none border-b"
-                :style="{ color: theme.text, borderColor: theme.lavender }"
-                :aria-label="`Edit todo: ${todo.title}`"
-                @blur="saveTodoTitle(note.id, todo.id)"
-                @keydown.enter="saveTodoTitle(note.id, todo.id)"
-                @keydown.escape="editingTodoKey = null"
-              />
-              <span
-                v-else
-                class="flex-1 min-w-0 break-all cursor-text"
-                :class="{ 'line-through': todo.completed }"
-                :style="{ color: todo.completed ? theme.surface2 : theme.text }"
-                @click="startEditingTodo(note.id, todo.id, todo.title)"
-              >
-                {{ todo.title }}
-              </span>
-              <button
-                class="cursor-pointer md:hidden md:group-hover:block"
-                :style="{ color: theme.overlay0 }"
-                @click="removeTodo(note.id, todo.id)"
-                @mouseenter="($event.target as HTMLElement).style.color = theme.red"
-                @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
-              >
-                [x]
-              </button>
-            </div>
-
-            <!-- Drop zone for end of list -->
-            <div
-              v-if="draggedTodo && draggedTodo.noteId !== note.id"
-              class="h-8 transition-colors"
-              :style="{
-                borderTop: dragOverNoteId === note.id && dragOverTodoIndex === note.todos.length ? `2px solid ${theme.lavender}` : '2px solid transparent',
-              }"
-              @dragover="handleDragOver"
-              @dragenter="handleTodoDragEnter(note.id, note.todos.length)"
-              @dragleave="handleTodoDragLeave"
-              @drop="handleTodoDrop(note.id, note.todos.length, $event)"
-            ></div>
-          </div>
-
-          <!-- Add Todo Input -->
-          <div class="mt-3">
-            <input
-              type="text"
-              placeholder="> Add todo..."
-              class="w-full bg-transparent outline-none"
-              :style="{ color: theme.overlay0 }"
-              @keydown.enter="handleAddTodo(note.id, $event)"
-              @focus="($event.target as HTMLElement).style.color = theme.text"
-              @blur="handleAddTodo(note.id, $event); ($event.target as HTMLElement).style.color = theme.overlay0"
-            />
-          </div>
-        </template>
-
-        <!-- Text Note Content -->
-        <div
-          v-else
-          class="flex-1 min-h-25 grid"
-        >
-          <textarea
-            :value="note.content"
-            @input="updateTextContent(note.id, ($event.target as HTMLTextAreaElement).value)"
-            placeholder="Write your note..."
-            class="w-full bg-transparent outline-none resize-none scrollbar-none [grid-area:1/1/2/2] field-sizing-content"
-            :style="{
-              color: theme.text,
-              backgroundImage: 'repeating-linear-gradient(transparent, transparent 1.4em, rgba(255, 255, 255, 0.05) 1.4em, rgba(255, 255, 255, 0.05) calc(1.4em + 1px))',
-              lineHeight: '1.4em',
-            }"
-          ></textarea>
-        </div>
-
-        <!-- Created Date -->
-        <span
-          v-if="showCreatedAt && note.createdAt"
-          class="absolute bottom-2 right-4 text-xs"
-          :style="{ color: theme.overlay0 }"
-        >
-          {{ note.createdAt.split('T')[0] }}
-        </span>
-        </div>
-      </div>
+        :ref="(el) => setNoteCardRef(note.id, el as InstanceType<typeof NoteCard>)"
+        :note="note"
+        :index="index"
+        :is-dragging="draggedIndex === index"
+        :is-drag-over="dragOverIndex === index"
+        :is-old="isOldNote(note)"
+        :show-created-at="showCreatedAt"
+        :dragged-todo="draggedTodo"
+        :drag-over-todo-index="dragOverTodoIndex"
+        :drag-over-note-id="dragOverNoteId"
+        @rename-note="renameNote"
+        @rename-todo="renameTodo"
+        @cycle-tag="cycleNoteTag"
+        @remove-note="removeNote"
+        @toggle-todo="toggleTodo"
+        @add-todo="addTodo"
+        @remove-todo="removeTodo"
+        @update-text-content="updateTextContent"
+        @drag-start="handleDragStart"
+        @drag-end="handleDragEnd"
+        @drag-enter="handleDragEnter"
+        @drag-leave="handleDragLeave"
+        @drop="handleDrop"
+        @todo-drag-start="handleTodoDragStart"
+        @todo-drag-end="handleTodoDragEnd"
+        @todo-drag-enter="handleTodoDragEnter"
+        @todo-drag-leave="handleTodoDragLeave"
+        @todo-drop="handleTodoDrop"
+      />
 
       <!-- Add Note Buttons -->
       <div
