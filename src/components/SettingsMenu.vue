@@ -54,7 +54,7 @@ function selectWeekLength(length: '5' | '7') {
       }"
       @click="toggleMenu"
     >
-      [ Settings ]
+      Settings
     </button>
 
     <!-- Main Settings Menu -->
