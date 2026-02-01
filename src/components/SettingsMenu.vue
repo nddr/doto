@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useTheme, type ThemeName } from '@/composables/useTheme'
-import { useWeekLength, type WeekLength } from '@/composables/useWeekLength'
+import { useWeekLength } from '@/composables/useWeekLength'
 import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
 import { useTodoList } from '@/composables/useTodoList'
 import { exportAllNotesAsFile } from '@/utils/export'
@@ -10,157 +11,179 @@ const { weekLength, setWeekLength } = useWeekLength()
 const { showCreatedAt, setShowCreatedAt } = useShowCreatedAt()
 const { notes } = useTodoList()
 
+const menuOpen = ref(false)
+const activeSubmenu = ref<'theme' | 'week' | null>(null)
+
+function toggleMenu() {
+  menuOpen.value = !menuOpen.value
+  if (!menuOpen.value) {
+    activeSubmenu.value = null
+  }
+}
+
+function closeMenu() {
+  menuOpen.value = false
+  activeSubmenu.value = null
+}
+
 function handleExportAllNotes() {
   exportAllNotesAsFile(notes.value)
-  document.getElementById('settings-menu')?.hidePopover()
+  closeMenu()
+}
+
+function selectTheme(name: ThemeName) {
+  setTheme(name)
+  closeMenu()
+}
+
+function selectWeekLength(length: '5' | '7') {
+  setWeekLength(length)
+  closeMenu()
 }
 </script>
 
 <template>
-  <!-- Settings Button -->
-  <button
-    popovertarget="settings-menu"
-    class="fixed top-4 right-6 z-10 px-3 py-1 border cursor-pointer transition-colors"
-    style="anchor-name: --settings-btn"
-    :style="{
-      borderColor: theme.surface1,
-      backgroundColor: theme.surface0,
-      color: theme.text,
-    }"
-  >
-    [ Settings ]
-  </button>
-
-  <!-- Main Settings Menu -->
-  <div
-    id="settings-menu"
-    popover
-    class="m-0 p-0 border"
-    style="position-anchor: --settings-btn; anchor-name: --settings-menu; inset: unset; top: anchor(bottom); right: anchor(right)"
-    :style="{
-      borderColor: theme.surface1,
-      backgroundColor: theme.surface0,
-    }"
-  >
-    <!-- Theme Sub-menu Trigger -->
+  <div class="fixed top-4 right-6 z-10" @mouseleave="closeMenu">
+    <!-- Settings Button -->
     <button
-      popovertarget="theme-submenu"
-      class="block w-full px-3 py-1 text-left cursor-pointer transition-colors"
+      class="px-3 py-1 border cursor-pointer transition-colors"
       :style="{
+        borderColor: theme.surface1,
+        backgroundColor: theme.surface0,
         color: theme.text,
       }"
-      @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-      @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
-      style="anchor-name: --theme-trigger"
+      @click="toggleMenu"
     >
-      Theme
+      [ Settings ]
     </button>
 
-    <!-- Week Length Sub-menu Trigger -->
-    <button
-      popovertarget="week-submenu"
-      class="block w-full px-3 py-1 text-left cursor-pointer transition-colors"
-      :style="{
-        color: theme.text,
-      }"
-      @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-      @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
-      style="anchor-name: --week-trigger"
+    <!-- Main Settings Menu -->
+    <div
+      v-if="menuOpen"
+      class="absolute top-full right-0 pt-1"
     >
-      Week Length
-    </button>
+      <div
+        class="border"
+        :style="{
+          borderColor: theme.surface1,
+          backgroundColor: theme.surface0,
+        }"
+      >
+      <!-- Theme Sub-menu Trigger -->
+      <div class="relative" @mouseenter="activeSubmenu = 'theme'">
+        <button
+          class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+          :style="{
+            color: theme.text,
+            backgroundColor: activeSubmenu === 'theme' ? theme.surface1 : 'transparent',
+          }"
+        >
+          Theme
+        </button>
 
-    <!-- Show Dates Toggle -->
-    <button
-      class="block w-full px-3 py-1 text-left cursor-pointer transition-colors"
-      :style="{
-        color: theme.text,
-      }"
-      @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-      @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
-      @click="setShowCreatedAt(!showCreatedAt)"
-    >
-      [{{ showCreatedAt ? 'x' : ' ' }}] Show Dates
-    </button>
+        <!-- Theme Sub-menu -->
+        <div
+          v-if="activeSubmenu === 'theme'"
+          class="absolute top-0 right-full border"
+          :style="{
+            borderColor: theme.surface1,
+            backgroundColor: theme.surface0,
+          }"
+        >
+          <button
+            v-for="name in themeNames"
+            :key="name"
+            class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+            :style="{
+              color: themeName === name ? theme.lavender : theme.text,
+              backgroundColor: themeName === name ? theme.surface1 : 'transparent',
+            }"
+            @click="selectTheme(name as ThemeName)"
+            @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+            @mouseleave="($event.target as HTMLElement).style.backgroundColor = themeName === name ? theme.surface1 : 'transparent'"
+          >
+            {{ themeName === name ? '> ' : '  ' }}{{ themes[name].name }}
+          </button>
+        </div>
+      </div>
 
-    <!-- Export All Notes -->
-    <button
-      class="block w-full px-3 py-1 text-left cursor-pointer transition-colors"
-      :style="{
-        color: theme.text,
-      }"
-      @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-      @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
-      @click="handleExportAllNotes"
-    >
-      Export All Notes
-    </button>
-  </div>
+      <!-- Week Length Sub-menu Trigger -->
+      <div class="relative" @mouseenter="activeSubmenu = 'week'">
+        <button
+          class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+          :style="{
+            color: theme.text,
+            backgroundColor: activeSubmenu === 'week' ? theme.surface1 : 'transparent',
+          }"
+        >
+          Week Length
+        </button>
 
-  <!-- Theme Sub-menu -->
-  <div
-    id="theme-submenu"
-    popover
-    class="m-0 p-0 border"
-    style="position-anchor: --settings-menu; inset: unset; top: anchor(top); right: anchor(left)"
-    :style="{
-      borderColor: theme.surface1,
-      backgroundColor: theme.surface0,
-    }"
-  >
-    <button
-      v-for="name in themeNames"
-      :key="name"
-      popovertarget="settings-menu"
-      class="block w-full px-3 py-1 text-left cursor-pointer transition-colors"
-      :style="{
-        color: themeName === name ? theme.lavender : theme.text,
-        backgroundColor: themeName === name ? theme.surface1 : 'transparent',
-      }"
-      @click="setTheme(name as ThemeName)"
-      @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-      @mouseleave="($event.target as HTMLElement).style.backgroundColor = themeName === name ? theme.surface1 : 'transparent'"
-    >
-      {{ themeName === name ? '> ' : ' ' }}{{ themes[name].name }}
-    </button>
-  </div>
+        <!-- Week Length Sub-menu -->
+        <div
+          v-if="activeSubmenu === 'week'"
+          class="absolute top-0 right-full border"
+          :style="{
+            borderColor: theme.surface1,
+            backgroundColor: theme.surface0,
+          }"
+        >
+          <button
+            class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+            :style="{
+              color: weekLength === '5' ? theme.lavender : theme.text,
+              backgroundColor: weekLength === '5' ? theme.surface1 : 'transparent',
+            }"
+            @click="selectWeekLength('5')"
+            @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+            @mouseleave="($event.target as HTMLElement).style.backgroundColor = weekLength === '5' ? theme.surface1 : 'transparent'"
+          >
+            {{ weekLength === '5' ? '> ' : '  ' }}5 days
+          </button>
+          <button
+            class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+            :style="{
+              color: weekLength === '7' ? theme.lavender : theme.text,
+              backgroundColor: weekLength === '7' ? theme.surface1 : 'transparent',
+            }"
+            @click="selectWeekLength('7')"
+            @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+            @mouseleave="($event.target as HTMLElement).style.backgroundColor = weekLength === '7' ? theme.surface1 : 'transparent'"
+          >
+            {{ weekLength === '7' ? '> ' : '  ' }}7 days
+          </button>
+        </div>
+      </div>
 
-  <!-- Week Length Sub-menu -->
-  <div
-    id="week-submenu"
-    popover
-    class="m-0 p-0 border"
-    style="position-anchor: --settings-menu; inset: unset; top: anchor(bottom); right: anchor(left)"
-    :style="{
-      borderColor: theme.surface1,
-      backgroundColor: theme.surface0,
-    }"
-  >
-    <button
-      popovertarget="settings-menu"
-      class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
-      :style="{
-        color: weekLength === '5' ? theme.lavender : theme.text,
-        backgroundColor: weekLength === '5' ? theme.surface1 : 'transparent',
-      }"
-      @click="setWeekLength('5')"
-      @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-      @mouseleave="($event.target as HTMLElement).style.backgroundColor = weekLength === '5' ? theme.surface1 : 'transparent'"
-    >
-      {{ weekLength === '5' ? '> ' : ' ' }}5 days
-    </button>
-    <button
-      popovertarget="settings-menu"
-      class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
-      :style="{
-        color: weekLength === '7' ? theme.lavender : theme.text,
-        backgroundColor: weekLength === '7' ? theme.surface1 : 'transparent',
-      }"
-      @click="setWeekLength('7')"
-      @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-      @mouseleave="($event.target as HTMLElement).style.backgroundColor = weekLength === '7' ? theme.surface1 : 'transparent'"
-    >
-      {{ weekLength === '7' ? '> ' : ' ' }}7 days
-    </button>
+      <!-- Show Dates Toggle -->
+      <button
+        class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+        :style="{
+          color: theme.text,
+        }"
+        @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1; activeSubmenu = null"
+        @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
+        @click="setShowCreatedAt(!showCreatedAt)"
+      >
+        Show Dates on Notes
+        <span :style="{ color: showCreatedAt ? theme.green : theme.text }">{{
+          showCreatedAt ? '[─●]' : '[●─]'
+        }}</span>
+      </button>
+
+      <!-- Export All Notes -->
+      <button
+        class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+        :style="{
+          color: theme.text,
+        }"
+        @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1; activeSubmenu = null"
+        @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
+        @click="handleExportAllNotes"
+      >
+        Export All to Markdown
+      </button>
+      </div>
+    </div>
   </div>
 </template>
