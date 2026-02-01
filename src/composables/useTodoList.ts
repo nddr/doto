@@ -128,6 +128,7 @@ export function useTodoList() {
       todos: [],
       createdAt: new Date().toISOString(),
       currentDate: date ?? new Date().toISOString().split('T')[0],
+      autoAdvance: true,
     })
   }
 
@@ -139,6 +140,7 @@ export function useTodoList() {
       content: '',
       createdAt: new Date().toISOString(),
       currentDate: date ?? new Date().toISOString().split('T')[0],
+      autoAdvance: true,
     })
   }
 
@@ -259,8 +261,6 @@ export function useTodoList() {
   function toggleAutoDuplicate(noteId: number) {
     const note = notes.value.find((n) => n.id === noteId)
     if (note && note.type === 'todo') {
-      // Only allow enabling if autoAdvance is on
-      if (!note.autoAdvance) return
       note.autoDuplicate = !note.autoDuplicate
     }
   }

@@ -5,7 +5,7 @@ import { useTheme } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 import AppHeader from '@/components/AppHeader.vue'
 
-const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, toggleAutoAdvance, toggleAutoDuplicate, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo } = useTodoList()
+const { notes, addTodoNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, toggleAutoDuplicate, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 
@@ -437,7 +437,7 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 4xl:grid-cols-4 gap-4">
       <!-- Note Cards -->
       <div
         v-for="(note, index) in filteredNotes"
@@ -462,26 +462,79 @@ onUnmounted(() => {
         >
           <div class="flex flex-col gap-1">
             <div
-              class="w-6 h-0.5 rounded"
+              class="w-10 h-0.5 rounded"
               :style="{ backgroundColor: theme.overlay0 }"
             ></div>
             <div
-              class="w-6 h-0.5 rounded"
+              class="w-10 h-0.5 rounded"
               :style="{ backgroundColor: theme.overlay0 }"
             ></div>
           </div>
         </div>
 
-        <!-- Close Button -->
+        <!-- Menu Button -->
         <button
-          class="absolute top-4 right-4 flex w-4 h-4 p-1 border border-red-200 cursor-pointer hover:border-red-400"
+          class="absolute top-3 right-4 flex items-center justify-center w-6 h-6 text-2xl cursor-pointer transition-colors"
           :style="{ color: theme.overlay0 }"
-          :aria-label="`Delete ${note.name}`"
-          @click="removeNote(note.id)"
-          @mouseenter="($event.target as HTMLElement).style.color = theme.red"
+          :popovertarget="`note-menu-${note.id}`"
+          :aria-label="`Menu for ${note.name}`"
+          @click="($event.target as HTMLElement).style.setProperty('anchor-name', '--note-menu')"
+          @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
           @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
         >
+          ⋮
         </button>
+
+        <!-- Dropdown Menu -->
+        <div
+          :id="`note-menu-${note.id}`"
+          popover
+          class="note-menu-popover min-w-48 border shadow-lg"
+          :style="{
+            backgroundColor: theme.surface1,
+            borderColor: theme.surface2,
+          }"
+        >
+          <!-- Auto-Duplicate (TodoNotes only) -->
+          <div
+            v-if="note.type === 'todo'"
+            class="flex items-center justify-between px-4 py-2 cursor-pointer transition-colors"
+            @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface2"
+            @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
+            @click="toggleAutoDuplicate(note.id)"
+          >
+            <span class="mr-2" :style="{ color: theme.text }">Auto-Duplicate</span>
+            <div
+              class="w-10 h-5 relative rounded-full transition-colors"
+              :style="{ backgroundColor: note.autoDuplicate ? theme.mauve : theme.surface0 }"
+            >
+              <span
+                class="absolute top-0.5 w-4 h-4 rounded-full transition-all"
+                :style="{
+                  backgroundColor: theme.base,
+                  left: note.autoDuplicate ? '22px' : '2px',
+                }"
+              ></span>
+            </div>
+          </div>
+
+          <!-- Divider (only show if todo note) -->
+          <div
+            v-if="note.type === 'todo'"
+            class="border-t"
+            :style="{ borderColor: theme.surface2 }"
+          ></div>
+
+          <!-- Delete -->
+          <div
+            class="flex items-center px-4 py-2 cursor-pointer transition-colors"
+            @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface2"
+            @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
+            @click="removeNote(note.id)"
+          >
+            <span :style="{ color: theme.red }">Delete</span>
+          </div>
+        </div>
 
         <!-- Left Gutter -->
         <div class="flex flex-col items-center gap-4 px-4 -pt-2">
@@ -497,47 +550,6 @@ onUnmounted(() => {
             @click="cycleNoteTag(note.id, note.tags)"
           >
             {{ getNoteTagBadge(note) }}
-          </button>
-
-          <!-- Auto-Advance Toggle -->
-          <button
-            class="w-8 h-12 relative cursor-pointer transition-colors"
-            :style="{
-              backgroundColor: note.autoAdvance ? theme.lavender : theme.surface1,
-            }"
-            title="Auto-advance to current day"
-            @click="toggleAutoAdvance(note.id)"
-          >
-            <span
-              class="absolute left-1 w-6 h-6 transition-all"
-              :style="{
-                backgroundColor: theme.base,
-                top: note.autoAdvance ? '4px' : 'calc(100% - 28px)',
-              }"
-            >
-          </span>
-          </button>
-
-          <!-- Auto-Duplicate Toggle (TodoNotes only) -->
-          <button
-            v-if="note.type === 'todo'"
-            class="w-8 h-12 relative transition-colors"
-            :style="{
-              backgroundColor: note.autoDuplicate ? theme.mauve : theme.surface1,
-              opacity: note.autoAdvance ? 1 : 0.4,
-              cursor: note.autoAdvance ? 'pointer' : 'not-allowed',
-            }"
-            :title="note.autoAdvance ? 'Keep history and duplicate incomplete todos' : 'Enable auto-advance first'"
-            @click="toggleAutoDuplicate(note.id)"
-          >
-            <span
-              class="absolute left-1 w-6 h-6 transition-all"
-              :style="{
-                backgroundColor: theme.base,
-                top: note.autoDuplicate ? '4px' : 'calc(100% - 28px)',
-              }"
-            >
-          </span>
           </button>
         </div>
 

@@ -13,3 +13,12 @@ body {
 .scrollbar-none::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+.note-menu-popover {
+  position: fixed;
+  position-anchor: --note-menu;
+  inset: unset;
+  top: anchor(bottom);
+  right: anchor(right);
+  margin: 0;
+}
