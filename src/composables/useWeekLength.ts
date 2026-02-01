@@ -2,7 +2,7 @@ import { ref, computed } from 'vue'
 
 export type WeekLength = '5' | '7'
 
-const STORAGE_KEY = 'oe-week-length'
+const STORAGE_KEY = 'doto-week-length'
 
 const weekLength = ref<WeekLength>((localStorage.getItem(STORAGE_KEY) as WeekLength) || '7')
 

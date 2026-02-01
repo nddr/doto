@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-const STORAGE_KEY = 'oe-show-created-at'
+const STORAGE_KEY = 'doto-show-created-at'
 
 const showCreatedAt = ref<boolean>(localStorage.getItem(STORAGE_KEY) === 'true')
 

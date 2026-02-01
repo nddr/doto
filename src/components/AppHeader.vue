@@ -5,8 +5,8 @@ import SettingsMenu from '@/components/SettingsMenu.vue'
 <template>
   <header>
     <img
-      src="/oe.png"
-      alt="DoToo"
+      src="/doto.png"
+      alt="Doto Logo"
       width="42"
       height="42"
       class="fixed top-4 left-6 z-10"

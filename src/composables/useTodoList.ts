@@ -31,7 +31,7 @@ export interface Todo {
 
 export type NoteType = TaskNote | TextNote
 
-const STORAGE_KEY = 'oe-notes'
+const STORAGE_KEY = 'doto-notes'
 
 function loadFromStorage(): NoteType[] {
   const stored = localStorage.getItem(STORAGE_KEY)
@@ -289,11 +289,7 @@ export function useTodoList() {
     })
   }
 
-  function moveTodoToDate(
-    fromNoteId: number,
-    todoIndex: number,
-    targetDate: string,
-  ): void {
+  function moveTodoToDate(fromNoteId: number, todoIndex: number, targetDate: string): void {
     const fromNote = notes.value.find((n) => n.id === fromNoteId)
     if (fromNote?.type !== 'task') return
     if (todoIndex < 0 || todoIndex >= fromNote.todos.length) return
@@ -302,9 +298,7 @@ export function useTodoList() {
     if (!todoToMove) return
 
     // Find first TaskNote on target date
-    let targetNote = notes.value.find(
-      (n) => n.type === 'task' && n.currentDate === targetDate,
-    )
+    let targetNote = notes.value.find((n) => n.type === 'task' && n.currentDate === targetDate)
 
     // If no TaskNote exists, create one with default name (the date)
     if (!targetNote) {

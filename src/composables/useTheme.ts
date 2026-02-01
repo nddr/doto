@@ -153,7 +153,7 @@ const themes: Record<ThemeName, CatppuccinTheme> = {
 
 const themeNames: ThemeName[] = ['latte', 'frappe', 'macchiato', 'mocha']
 
-const STORAGE_KEY = 'oe-theme'
+const STORAGE_KEY = 'doto-theme'
 
 function loadSavedTheme(): ThemeName {
   const saved = localStorage.getItem(STORAGE_KEY)
