@@ -12,7 +12,7 @@ export interface Note {
 }
 
 export interface TaskNote extends Note {
-  type: 'todo'
+  type: 'task'
   todos: Todo[]
 }
 
@@ -44,7 +44,7 @@ function loadFromStorage(): NoteType[] {
   }
   return [
     {
-      type: 'todo',
+      type: 'task',
       id: 1,
       name: 'My Tasks',
       todos: [{ id: 1, title: 'Make your bed', completed: false }],
@@ -61,7 +61,7 @@ function getNextId(notes: NoteType[]): { noteId: number; todoId: number } {
   let maxTodoId = 0
   for (const note of notes) {
     if (note.id > maxNoteId) maxNoteId = note.id
-    if (note.type === 'todo') {
+    if (note.type === 'task') {
       for (const todo of note.todos) {
         if (todo.id > maxTodoId) maxTodoId = todo.id
       }
@@ -82,7 +82,7 @@ function advanceNotes() {
 
   for (const note of notes.value) {
     if (note.autoAdvance && note.currentDate && note.currentDate < today) {
-      if (note.type === 'todo') {
+      if (note.type === 'task') {
         // Only advance if there are incomplete todos
         const hasIncompleteTodos = note.todos.some((todo) => !todo.completed)
         if (hasIncompleteTodos) {
@@ -105,7 +105,7 @@ watch(notes, (newNotes) => saveToStorage(newNotes), { deep: true })
 export function useTodoList() {
   function addTaskNote(name: string, date?: string) {
     notes.value.push({
-      type: 'todo',
+      type: 'task',
       id: nextNoteId++,
       name,
       todos: [],
@@ -135,6 +135,11 @@ export function useTodoList() {
   }
 
   function removeNote(noteId: number) {
+    // toast.confirm('Delete this item?', [
+    //   { label: 'Cancel', handler: () => {}, style: 'default' },
+    //   { label: 'Delete', handler: () => [], style: 'danger' },
+    // ])
+
     const index = notes.value.findIndex((n) => n.id === noteId)
     if (index !== -1) {
       notes.value.splice(index, 1)
@@ -159,7 +164,7 @@ export function useTodoList() {
 
   function addTodo(noteId: number, title: string) {
     const note = notes.value.find((n) => n.id === noteId)
-    if (note && note.type === 'todo') {
+    if (note && note.type === 'task') {
       note.todos.push({
         id: nextTodoId++,
         title,
@@ -171,7 +176,7 @@ export function useTodoList() {
 
   function removeTodo(noteId: number, todoId: number) {
     const note = notes.value.find((n) => n.id === noteId)
-    if (note && note.type === 'todo') {
+    if (note && note.type === 'task') {
       const index = note.todos.findIndex((todo) => todo.id === todoId)
       if (index !== -1) {
         note.todos.splice(index, 1)
@@ -181,7 +186,7 @@ export function useTodoList() {
 
   function toggleTodo(noteId: number, todoId: number) {
     const note = notes.value.find((n) => n.id === noteId)
-    if (note && note.type === 'todo') {
+    if (note && note.type === 'task') {
       const todo = note.todos.find((t) => t.id === todoId)
       if (todo) {
         todo.completed = !todo.completed
@@ -192,7 +197,7 @@ export function useTodoList() {
 
   function renameTodo(noteId: number, todoId: number, title: string) {
     const note = notes.value.find((n) => n.id === noteId)
-    if (note && note.type === 'todo') {
+    if (note && note.type === 'task') {
       const todo = note.todos.find((t) => t.id === todoId)
       if (todo) {
         todo.title = title
@@ -202,7 +207,7 @@ export function useTodoList() {
 
   function moveTodo(noteId: number, fromIndex: number, toIndex: number) {
     const note = notes.value.find((n) => n.id === noteId)
-    if (note && note.type === 'todo') {
+    if (note && note.type === 'task') {
       if (fromIndex === toIndex) return
       if (fromIndex < 0 || fromIndex >= note.todos.length) return
       if (toIndex < 0 || toIndex >= note.todos.length) return
@@ -220,7 +225,7 @@ export function useTodoList() {
   ) {
     const fromNote = notes.value.find((n) => n.id === fromNoteId)
     const toNote = notes.value.find((n) => n.id === toNoteId)
-    if (fromNote?.type !== 'todo' || toNote?.type !== 'todo') return
+    if (fromNote?.type !== 'task' || toNote?.type !== 'task') return
     if (fromTodoIndex < 0 || fromTodoIndex >= fromNote.todos.length) return
 
     const todoToMove = fromNote.todos[fromTodoIndex]
