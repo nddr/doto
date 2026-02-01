@@ -579,7 +579,7 @@ onUnmounted(() => {
         ></div>
 
         <!-- Todo List Content -->
-        <template v-if="note.type === 'todo'">
+        <template v-if="note.type === 'task'">
           <div class="space-y-1">
             <div
               v-for="(todo, todoIndex) in note.todos"
