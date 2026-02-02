@@ -4,15 +4,21 @@ import { useTheme, type ThemeName } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
 import { useTodoList } from '@/composables/useTodoList'
-import { exportAllNotesAsFile, exportAllNotesAsJson } from '@/utils/export'
+import { useDialog } from '@/composables/useDialog'
+import { useToast } from '@/composables/useToast'
+import { exportAllNotesAsFile, exportAllNotesAsJson, readJsonFile } from '@/utils/export'
 
 const { theme, themeName, themeNames, themes, setTheme } = useTheme()
 const { weekLength, setWeekLength } = useWeekLength()
 const { showCreatedAt, setShowCreatedAt } = useShowCreatedAt()
-const { notes } = useTodoList()
+const { notes, replaceAllNotes } = useTodoList()
+const { confirm } = useDialog()
+const toast = useToast()
+
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 const menuOpen = ref(false)
-const activeSubmenu = ref<'theme' | 'week' | 'export' | null>(null)
+const activeSubmenu = ref<'theme' | 'week' | 'export' | 'import' | null>(null)
 
 function toggleMenu() {
   menuOpen.value = !menuOpen.value
@@ -36,6 +42,33 @@ function handleExportJson() {
   closeMenu()
 }
 
+function handleImportClick() {
+  fileInputRef.value?.click()
+}
+
+async function handleFileSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  input.value = '' // Reset for re-selection
+
+  const result = await readJsonFile(file)
+  if (!result.success || !result.notes) {
+    toast.error(result.error || 'Failed to import backup')
+    return
+  }
+
+  const noteCount = result.notes.length
+  confirm(
+    `This will replace all ${notes.value.length} current notes with ${noteCount} notes from the backup. This action cannot be undone.`,
+    () => {
+      replaceAllNotes(result.notes!)
+      toast.success(`Successfully imported ${noteCount} notes`)
+    },
+  )
+  closeMenu()
+}
+
 function selectTheme(name: ThemeName) {
   setTheme(name)
   closeMenu()
@@ -48,10 +81,20 @@ function selectWeekLength(length: '5' | '7') {
 </script>
 
 <template>
+  <input
+    ref="fileInputRef"
+    type="file"
+    accept=".json"
+    class="hidden"
+    @change="handleFileSelected"
+  />
+  <!-- Backdrop to close menu on click outside -->
   <div
-    class="fixed top-4 right-6 z-10"
-    @mouseleave="closeMenu"
-  >
+    v-if="menuOpen"
+    class="fixed inset-0 z-10"
+    @click="closeMenu"
+  />
+  <div class="fixed top-4 right-6 z-20">
     <!-- Settings Button -->
     <button
       class="px-3 py-1 border cursor-pointer transition-colors"
@@ -169,6 +212,12 @@ function selectWeekLength(length: '5' | '7') {
           </div>
         </div>
 
+        <!-- Divider -->
+        <div
+          class="my-1 mx-2 border-t"
+          :style="{ borderColor: theme.surface1 }"
+        />
+
         <!-- Export Sub-menu Trigger -->
         <div
           class="relative"
@@ -217,6 +266,50 @@ function selectWeekLength(length: '5' | '7') {
             </button>
           </div>
         </div>
+
+        <!-- Import Sub-menu Trigger -->
+        <div
+          class="relative"
+          @mouseenter="activeSubmenu = 'import'"
+        >
+          <button
+            class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+            :style="{
+            color: theme.text,
+            backgroundColor: activeSubmenu === 'import' ? theme.surface1 : 'transparent',
+          }"
+          >
+            Import
+          </button>
+
+          <!-- Import Sub-menu -->
+          <div
+            v-if="activeSubmenu === 'import'"
+            class="absolute top-0 right-full border"
+            :style="{
+            borderColor: theme.surface1,
+            backgroundColor: theme.surface0,
+          }"
+          >
+            <button
+              class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+              :style="{
+              color: theme.text,
+            }"
+              @click="handleImportClick"
+              @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+              @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
+            >
+              Import Backup (JSON)
+            </button>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div
+          class="my-1 mx-2 border-t"
+          :style="{ borderColor: theme.surface1 }"
+        />
 
         <!-- Show Dates Toggle -->
         <button

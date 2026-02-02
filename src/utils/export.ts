@@ -1,6 +1,132 @@
 import type { NoteType } from '@/composables/useTodoList'
 
 /**
+ * Backup file structure for JSON export/import
+ */
+export interface DotoBackup {
+  version: number
+  exportedAt: string
+  notes: NoteType[]
+}
+
+/**
+ * Result of import validation
+ */
+export interface ImportResult {
+  success: boolean
+  notes?: NoteType[]
+  error?: string
+}
+
+/**
+ * Validate an individual note structure
+ */
+function validateNote(note: unknown, index: number): string | null {
+  if (typeof note !== 'object' || note === null) {
+    return `Note at index ${index}: must be an object`
+  }
+
+  const n = note as Record<string, unknown>
+
+  if (typeof n.id !== 'number') {
+    return `Note at index ${index}: missing or invalid id field`
+  }
+
+  if (typeof n.name !== 'string') {
+    return `Note at index ${index}: missing or invalid name field`
+  }
+
+  if (n.type !== 'task' && n.type !== 'text') {
+    return `Note at index ${index}: type must be 'task' or 'text'`
+  }
+
+  if (n.type === 'task') {
+    if (!Array.isArray(n.todos)) {
+      return `Note at index ${index}: task note must have todos array`
+    }
+    for (let i = 0; i < n.todos.length; i++) {
+      const todo = n.todos[i] as Record<string, unknown>
+      if (typeof todo !== 'object' || todo === null) {
+        return `Note at index ${index}, todo at index ${i}: must be an object`
+      }
+      if (typeof todo.id !== 'number') {
+        return `Note at index ${index}, todo at index ${i}: missing or invalid id`
+      }
+      if (typeof todo.title !== 'string') {
+        return `Note at index ${index}, todo at index ${i}: missing or invalid title`
+      }
+      if (typeof todo.completed !== 'boolean') {
+        return `Note at index ${index}, todo at index ${i}: missing or invalid completed field`
+      }
+    }
+  }
+
+  if (n.type === 'text') {
+    if (typeof n.content !== 'string') {
+      return `Note at index ${index}: text note must have content string`
+    }
+  }
+
+  return null
+}
+
+/**
+ * Validate a full backup file structure
+ */
+export function validateBackup(data: unknown): ImportResult {
+  if (typeof data !== 'object' || data === null) {
+    return { success: false, error: 'Invalid backup file: not a valid object' }
+  }
+
+  const backup = data as Record<string, unknown>
+
+  if (typeof backup.version !== 'number') {
+    return { success: false, error: 'Invalid backup file: missing or invalid version field' }
+  }
+
+  if (backup.version !== 1) {
+    return { success: false, error: `Unsupported backup version: ${backup.version}` }
+  }
+
+  if (!Array.isArray(backup.notes)) {
+    return { success: false, error: 'Invalid backup file: notes must be an array' }
+  }
+
+  for (let i = 0; i < backup.notes.length; i++) {
+    const error = validateNote(backup.notes[i], i)
+    if (error) {
+      return { success: false, error }
+    }
+  }
+
+  return { success: true, notes: backup.notes as NoteType[] }
+}
+
+/**
+ * Read and validate a JSON backup file
+ */
+export function readJsonFile(file: File): Promise<ImportResult> {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result as string)
+        resolve(validateBackup(data))
+      } catch {
+        resolve({ success: false, error: 'Failed to parse JSON file' })
+      }
+    }
+
+    reader.onerror = () => {
+      resolve({ success: false, error: 'Failed to read file' })
+    }
+
+    reader.readAsText(file)
+  })
+}
+
+/**
  * Convert a single note to Markdown format
  */
 export function noteToMarkdown(note: NoteType): string {

@@ -337,6 +337,16 @@ export function useTodoList() {
     }
   }
 
+  function replaceAllNotes(newNotes: NoteType[]) {
+    notes.value.splice(0, notes.value.length)
+    notes.value.push(...newNotes)
+
+    // Recalculate next IDs from imported data
+    const ids = getNextId(newNotes)
+    nextNoteId = ids.noteId
+    nextTodoId = ids.todoId
+  }
+
   return {
     notes,
     addTaskNote,
@@ -357,5 +367,6 @@ export function useTodoList() {
     moveTodoBetweenNotes,
     duplicateTaskNote,
     moveTodoToDate,
+    replaceAllNotes,
   }
 }
