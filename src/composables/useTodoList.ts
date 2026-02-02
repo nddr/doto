@@ -155,6 +155,19 @@ export function useTodoList() {
     notes.value.splice(toIndex, 0, removed)
   }
 
+  function moveNoteById(fromNoteId: number, toNoteId: number) {
+    if (fromNoteId === toNoteId) return
+
+    const fromIndex = notes.value.findIndex((n) => n.id === fromNoteId)
+    const toIndex = notes.value.findIndex((n) => n.id === toNoteId)
+
+    if (fromIndex === -1 || toIndex === -1) return
+
+    const removed = notes.value[fromIndex]!
+    notes.value.splice(fromIndex, 1)
+    notes.value.splice(toIndex, 0, removed)
+  }
+
   function updateTextContent(noteId: number, content: string) {
     const note = notes.value.find((n) => n.id === noteId)
     if (note && note.type === 'text') {
@@ -331,6 +344,7 @@ export function useTodoList() {
     renameNote,
     removeNote,
     moveNote,
+    moveNoteById,
     updateTextContent,
     updateNoteDate,
     updateNoteTag,

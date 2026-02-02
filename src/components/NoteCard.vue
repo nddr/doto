@@ -7,7 +7,6 @@ import { exportNoteAsFile, copyNoteToClipboard } from '@/utils/export'
 
 const props = defineProps<{
   note: NoteType
-  index: number
   isDragging: boolean
   isDragOver: boolean
   isOld: boolean
@@ -26,11 +25,11 @@ const emit = defineEmits<{
   'add-todo': [noteId: number, title: string]
   'remove-todo': [noteId: number, todoId: number]
   'update-text-content': [noteId: number, content: string]
-  'drag-start': [index: number]
+  'drag-start': [noteId: number]
   'drag-end': []
-  'drag-enter': [index: number]
+  'drag-enter': [noteId: number]
   'drag-leave': []
-  'drop': [index: number]
+  'drop': [noteId: number]
   'todo-drag-start': [noteId: number, todoIndex: number, event: DragEvent]
   'todo-drag-end': []
   'todo-drag-enter': [noteId: number, todoIndex: number]
@@ -53,8 +52,36 @@ function getNoteTagBadge(note: NoteType): string {
   return '*'
 }
 
+// Track enter/leave balance to handle event bubbling
+let dragEnterCount = 0
+
 function handleDragOver(event: DragEvent) {
   event.preventDefault()
+}
+
+function handleDragEnter(event: DragEvent) {
+  event.preventDefault()
+  dragEnterCount++
+  if (dragEnterCount === 1) {
+    emit('drag-enter', props.note.id)
+  }
+}
+
+function handleDragLeave() {
+  dragEnterCount--
+  if (dragEnterCount === 0) {
+    emit('drag-leave')
+  }
+}
+
+function handleDrop(event: DragEvent) {
+  dragEnterCount = 0
+  emit('drop', props.note.id)
+}
+
+function handleNoteDragStart() {
+  dragEnterCount = 0
+  emit('drag-start', props.note.id)
 }
 
 function handleAddTodo(noteId: number, event: Event) {
@@ -144,15 +171,15 @@ defineExpose({
       opacity: isDragging ? 0.5 : (isOld ? 0.5 : 1),
     }"
     @dragover="handleDragOver"
-    @dragenter="emit('drag-enter', index)"
-    @dragleave="emit('drag-leave')"
-    @drop="emit('drop', index)"
+    @dragenter="handleDragEnter"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
   >
     <!-- Drag Handle -->
     <div
       class="absolute top-2 left-[calc(50%-12px)] flex justify-center py-1 px-4 cursor-grab"
       draggable="true"
-      @dragstart="emit('drag-start', index)"
+      @dragstart="handleNoteDragStart"
       @dragend="emit('drag-end')"
     >
       <div class="flex flex-col gap-1">

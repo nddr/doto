@@ -13,7 +13,7 @@ import TagFilter from '@/components/TagFilter.vue'
 import DayFilter from '@/components/DayFilter.vue'
 import NoteCard from '@/components/NoteCard.vue'
 
-const { notes, addTaskNote, addTextNote, renameNote, removeNote, moveNote, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes, duplicateTaskNote, moveTodoToDate } = useTodoList()
+const { notes, addTaskNote, addTextNote, renameNote, removeNote, moveNoteById, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes, duplicateTaskNote, moveTodoToDate } = useTodoList()
 const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 const { showCreatedAt } = useShowCreatedAt()
@@ -22,8 +22,8 @@ const { open: openDialog, close: closeDialog } = useDialog()
 // Template refs for NoteCard instances
 const noteCardRefs = ref<Record<number, InstanceType<typeof NoteCard>>>({})
 
-const draggedIndex = ref<number | null>(null)
-const dragOverIndex = ref<number | null>(null)
+const draggedNoteId = ref<number | null>(null)
+const dragOverCardId = ref<number | null>(null)
 const dragOverDay = ref<string | null>(null)
 const draggedTodo = ref<{ noteId: number; todoIndex: number } | null>(null)
 const dragOverTodoIndex = ref<number | null>(null)
@@ -153,36 +153,36 @@ function handleAddTextNote() {
   })
 }
 
-function handleDragStart(index: number) {
-  draggedIndex.value = index
+function handleDragStart(noteId: number) {
+  draggedNoteId.value = noteId
 }
 
 function handleDragEnd() {
-  draggedIndex.value = null
-  dragOverIndex.value = null
+  draggedNoteId.value = null
+  dragOverCardId.value = null
   dragOverDay.value = null
 }
 
-function handleDragEnter(index: number) {
-  if (draggedIndex.value !== null && draggedIndex.value !== index) {
-    dragOverIndex.value = index
+function handleDragEnter(noteId: number) {
+  if (draggedNoteId.value !== null && draggedNoteId.value !== noteId) {
+    dragOverCardId.value = noteId
   }
 }
 
 function handleDragLeave() {
-  dragOverIndex.value = null
+  dragOverCardId.value = null
 }
 
-function handleDrop(toIndex: number) {
-  if (draggedIndex.value !== null && draggedIndex.value !== toIndex) {
-    moveNote(draggedIndex.value, toIndex)
+function handleDrop(toNoteId: number) {
+  if (draggedNoteId.value !== null && draggedNoteId.value !== toNoteId) {
+    moveNoteById(draggedNoteId.value, toNoteId)
   }
-  draggedIndex.value = null
-  dragOverIndex.value = null
+  draggedNoteId.value = null
+  dragOverCardId.value = null
 }
 
 function handleDayDragEnter(date: string) {
-  if (draggedIndex.value !== null || draggedTodo.value !== null) {
+  if (draggedNoteId.value !== null || draggedTodo.value !== null) {
     dragOverDay.value = date
   }
 }
@@ -206,13 +206,13 @@ function handleDayDrop(date: string) {
   }
 
   // Handle note drop
-  if (draggedIndex.value === null) return
+  if (draggedNoteId.value === null) return
 
-  const note = filteredNotes.value[draggedIndex.value]
+  const note = notes.value.find((n) => n.id === draggedNoteId.value)
 
   // Reset drag state immediately
-  draggedIndex.value = null
-  dragOverIndex.value = null
+  draggedNoteId.value = null
+  dragOverCardId.value = null
   dragOverDay.value = null
 
   if (!note) return
@@ -362,13 +362,12 @@ onUnmounted(() => {
     <div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 4xl:grid-cols-4 gap-4">
       <!-- Note Cards -->
       <NoteCard
-        v-for="(note, index) in filteredNotes"
+        v-for="note in filteredNotes"
         :key="note.id"
         :ref="(el) => setNoteCardRef(note.id, el as InstanceType<typeof NoteCard>)"
         :note="note"
-        :index="index"
-        :is-dragging="draggedIndex === index"
-        :is-drag-over="dragOverIndex === index"
+        :is-dragging="draggedNoteId === note.id"
+        :is-drag-over="dragOverCardId === note.id"
         :is-old="isOldNote(note)"
         :show-created-at="showCreatedAt"
         :dragged-todo="draggedTodo"
