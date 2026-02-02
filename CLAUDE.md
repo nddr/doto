@@ -41,6 +41,7 @@ pnpm lint:oxlint      # Run Oxlint with auto-fix
 No external state library—uses Vue reactivity + localStorage persistence.
 
 **Composables** (`src/composables/`):
+
 - `useTodoList` - Central data store for notes/todos, persists to localStorage
 - `useTheme`, `useWeekLength`, `useShowCreatedAt` - User preferences (localStorage-backed)
 - `useDialog`, `useToast` - UI state for modals and notifications
@@ -48,6 +49,7 @@ No external state library—uses Vue reactivity + localStorage persistence.
 ## Data Model
 
 Two note types defined in `useTodoList.ts`:
+
 - `TaskNote` - Has `todos: Todo[]` array with id, title, completed, timestamps
 - `TextNote` - Has `content: string` for freeform text
 
