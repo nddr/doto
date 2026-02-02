@@ -227,3 +227,37 @@ export async function copyNoteToClipboard(note: NoteType): Promise<boolean> {
   const markdown = noteToMarkdown(note)
   return copyToClipboard(markdown)
 }
+
+/**
+ * Download content as a JSON file
+ */
+export function downloadJson(content: string, filename: string): void {
+  const blob = new Blob([content], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename.endsWith('.json') ? filename : `${filename}.json`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+/**
+ * Export all notes as a JSON backup file
+ */
+export function exportAllNotesAsJson(notes: NoteType[]): void {
+  if (notes.length === 0) {
+    return
+  }
+
+  const backup = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    notes: notes,
+  }
+
+  const json = JSON.stringify(backup, null, 2)
+  const today = new Date().toISOString().split('T')[0]
+  downloadJson(json, `doto-backup-${today}`)
+}

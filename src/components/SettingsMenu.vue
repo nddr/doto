@@ -4,7 +4,7 @@ import { useTheme, type ThemeName } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
 import { useTodoList } from '@/composables/useTodoList'
-import { exportAllNotesAsFile } from '@/utils/export'
+import { exportAllNotesAsFile, exportAllNotesAsJson } from '@/utils/export'
 
 const { theme, themeName, themeNames, themes, setTheme } = useTheme()
 const { weekLength, setWeekLength } = useWeekLength()
@@ -12,7 +12,7 @@ const { showCreatedAt, setShowCreatedAt } = useShowCreatedAt()
 const { notes } = useTodoList()
 
 const menuOpen = ref(false)
-const activeSubmenu = ref<'theme' | 'week' | null>(null)
+const activeSubmenu = ref<'theme' | 'week' | 'export' | null>(null)
 
 function toggleMenu() {
   menuOpen.value = !menuOpen.value
@@ -26,8 +26,13 @@ function closeMenu() {
   activeSubmenu.value = null
 }
 
-async function handleExportAllNotes() {
-  await exportAllNotesAsFile(notes.value)
+function handleExportMarkdown() {
+  exportAllNotesAsFile(notes.value)
+  closeMenu()
+}
+
+function handleExportJson() {
+  exportAllNotesAsJson(notes.value)
   closeMenu()
 }
 
@@ -171,18 +176,51 @@ function selectWeekLength(length: '5' | '7') {
         }}</span>
       </button>
 
-      <!-- Export All Notes -->
-      <button
-        class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
-        :style="{
-          color: theme.text,
-        }"
-        @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1; activeSubmenu = null"
-        @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
-        @click="handleExportAllNotes"
-      >
-        Export All to Markdown
-      </button>
+      <!-- Export Sub-menu Trigger -->
+      <div class="relative" @mouseenter="activeSubmenu = 'export'">
+        <button
+          class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+          :style="{
+            color: theme.text,
+            backgroundColor: activeSubmenu === 'export' ? theme.surface1 : 'transparent',
+          }"
+        >
+          Export
+        </button>
+
+        <!-- Export Sub-menu -->
+        <div
+          v-if="activeSubmenu === 'export'"
+          class="absolute top-0 right-full border"
+          :style="{
+            borderColor: theme.surface1,
+            backgroundColor: theme.surface0,
+          }"
+        >
+          <button
+            class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+            :style="{
+              color: theme.text,
+            }"
+            @click="handleExportMarkdown"
+            @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+            @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
+          >
+            Export Readable (MD)
+          </button>
+          <button
+            class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+            :style="{
+              color: theme.text,
+            }"
+            @click="handleExportJson"
+            @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+            @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'"
+          >
+            Export Backup (JSON)
+          </button>
+        </div>
+      </div>
       </div>
     </div>
   </div>
