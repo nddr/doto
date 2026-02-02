@@ -226,15 +226,6 @@ defineExpose({
       >
         <span :style="{ color: theme.text }">Copy as Markdown</span>
       </div>
-      <!-- Export as Markdown -->
-      <div
-        class="flex items-center px-4 py-2 cursor-pointer transition-colors"
-        @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface2"
-        @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
-        @click="handleExportAsMarkdown"
-      >
-        <span :style="{ color: theme.text }">Export to Markdown</span>
-      </div>
       <!-- Separator -->
       <div
         class="border-b mx-2 my-1"
