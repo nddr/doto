@@ -1,4 +1,3 @@
-import JSZip from 'jszip'
 import type { NoteType } from '@/composables/useTodoList'
 
 /**
@@ -134,67 +133,91 @@ export function notesForDayToMarkdown(date: string, notes: NoteType[]): string {
 }
 
 /**
- * Download content as a ZIP file
+ * Get day of week abbreviation for a date string (YYYY-MM-DD format)
  */
-export function downloadZip(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename.endsWith('.zip') ? filename : `${filename}.zip`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+function getDayOfWeek(dateStr: string): string {
+  const date = new Date(dateStr + 'T00:00:00')
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  return days[date.getDay()] as string
 }
 
 /**
- * Export all notes as Markdown file(s)
- * - Single day: exports as a single .md file
- * - Multiple days: exports as a .zip containing one .md file per day
+ * Convert all notes to a single Markdown document grouped by date
+ * Days are sorted in descending order (most recent first), with 'undated' at the end
  */
-export async function exportAllNotesAsFile(notes: NoteType[]): Promise<void> {
+export function allNotesGroupedToMarkdown(notes: NoteType[]): string {
   const grouped = groupNotesByDate(notes)
   const dates = Array.from(grouped.keys()).sort((a, b) => {
-    // Sort chronologically, with 'undated' at the end
+    // Sort descending (most recent first), with 'undated' at the end
     if (a === 'undated') return 1
     if (b === 'undated') return -1
-    return a.localeCompare(b)
+    return b.localeCompare(a)
   })
 
-  if (dates.length === 0) {
+  const sections: string[] = []
+
+  for (const date of dates) {
+    const dayNotes = grouped.get(date)!
+    const lines: string[] = []
+
+    // Day header with day of week
+    if (date === 'undated') {
+      lines.push('# Undated')
+    } else {
+      lines.push(`# ${date} (${getDayOfWeek(date)})`)
+    }
+
+    // Each note as H2
+    for (const note of dayNotes) {
+      const tagSuffix = note.tags && note.tags.length > 0 ? ` [${note.tags[0]}]` : ''
+      lines.push(`## ${note.name}${tagSuffix}`)
+
+      if (note.type === 'task') {
+        for (const todo of note.todos) {
+          const checkbox = todo.completed ? '[x]' : '[ ]'
+          lines.push(`- ${checkbox} ${todo.title}`)
+        }
+      } else {
+        lines.push(note.content || '')
+      }
+
+      lines.push('')
+    }
+
+    sections.push(lines.join('\n'))
+  }
+
+  return sections.join('\n---\n\n')
+}
+
+/**
+ * Export all notes as a single Markdown file
+ */
+export function exportAllNotesAsFile(notes: NoteType[]): void {
+  if (notes.length === 0) {
     return
   }
 
-  if (dates.length === 1) {
-    // Single day: export as single markdown file
-    const date = dates[0] as string
-    const dayNotes = grouped.get(date) as NoteType[]
-    const markdown = notesForDayToMarkdown(date, dayNotes)
-    const filename = date === 'undated' ? 'doto-notes-undated' : `doto-notes-${date}`
-    downloadMarkdown(markdown, filename)
+  const markdown = allNotesGroupedToMarkdown(notes)
+
+  // Find date range for filename (excluding 'undated' from range display)
+  const grouped = groupNotesByDate(notes)
+  const datedDates = Array.from(grouped.keys())
+    .filter((d) => d !== 'undated')
+    .sort()
+
+  let filename: string
+  if (datedDates.length === 0) {
+    filename = 'doto-notes-undated'
+  } else if (datedDates.length === 1) {
+    filename = `doto-notes-${datedDates[0]}`
   } else {
-    // Multiple days: create zip with one file per day
-    const zip = new JSZip()
-
-    for (const date of dates) {
-      const dayNotes = grouped.get(date)!
-      const markdown = notesForDayToMarkdown(date, dayNotes)
-      const filename = date === 'undated' ? 'doto-notes-undated.md' : `doto-notes-${date}.md`
-      zip.file(filename, markdown)
-    }
-
-    // Find date range for filename (excluding 'undated' from range display)
-    const datedDates = dates.filter((d) => d !== 'undated')
-    const startDate = datedDates[0] || 'undated'
-    const endDate = datedDates[datedDates.length - 1] || 'undated'
-    const zipFilename =
-      startDate === endDate
-        ? `doto-notes-${startDate}.zip`
-        : `doto-notes-${startDate}-to-${endDate}.zip`
-
-    const blob = await zip.generateAsync({ type: 'blob' })
-    downloadZip(blob, zipFilename)
+    const startDate = datedDates[0]
+    const endDate = datedDates[datedDates.length - 1]
+    filename = `doto-notes-${startDate}-to-${endDate}`
   }
+
+  downloadMarkdown(markdown, filename)
 }
 
 /**
