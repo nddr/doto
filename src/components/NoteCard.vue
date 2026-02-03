@@ -108,6 +108,14 @@ function saveNoteName() {
   }
   isEditingName.value = false
   editingName.value = ''
+
+  // Focus the add task input for task notes
+  if (props.note.type === 'task') {
+    nextTick(() => {
+      const input = document.querySelector(`[data-add-todo-input="${props.note.id}"]`) as HTMLInputElement
+      input?.focus()
+    })
+  }
 }
 
 function cancelEditingNote() {
@@ -377,6 +385,7 @@ defineExpose({
           <input
             type="text"
             placeholder="Add task..."
+            :data-add-todo-input="note.id"
             class="w-full pl-8 bg-transparent outline-none add-todo-input"
             :style="{ color: theme.overlay0, '--placeholder-color': theme.subtext0 }"
             @keydown.enter="handleAddTodo(note.id, $event)"
