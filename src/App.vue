@@ -405,7 +405,7 @@ onUnmounted(() => {
           @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
           @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
         >
-          + New Tasks
+          + New Todo
         </button>
         <button
           class="cursor-pointer transition-colors"
