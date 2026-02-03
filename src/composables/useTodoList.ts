@@ -44,10 +44,13 @@ function loadFromStorage(): NoteType[] {
   }
   return [
     {
-      type: 'task',
       id: 1,
-      name: 'My Tasks',
-      todos: [{ id: 1, title: 'Make your bed', completed: false }],
+      type: 'task',
+      name: 'My First Tasks',
+      todos: [{ id: 1, title: 'Make my bed', completed: false }],
+      autoAdvance: true,
+      createdAt: toLocalISOString(),
+      currentDate: toLocalDateString(),
     },
   ]
 }
