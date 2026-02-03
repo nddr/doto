@@ -376,7 +376,7 @@ defineExpose({
         <div class="mt-4">
           <input
             type="text"
-            placeholder="Add todo..."
+            placeholder="Add task..."
             class="w-full pl-8 bg-transparent outline-none add-todo-input"
             :style="{ color: theme.overlay0, '--placeholder-color': theme.subtext0 }"
             @keydown.enter="handleAddTodo(note.id, $event)"
