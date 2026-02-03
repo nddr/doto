@@ -122,7 +122,7 @@ function goToNextWeek() {
 }
 
 function handleAddTaskNote() {
-  const defaultName = toLocalDateString()
+  const defaultName = selectedDate.value ?? toLocalDateString()
   addTaskNote(defaultName, selectedDate.value ?? undefined)
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
@@ -138,7 +138,7 @@ function handleAddTaskNote() {
 }
 
 function handleAddTextNote() {
-  const defaultName = toLocalDateString()
+  const defaultName = selectedDate.value ?? toLocalDateString()
   addTextNote(defaultName, selectedDate.value ?? undefined)
   nextTick(() => {
     const newNote = notes.value[notes.value.length - 1]
