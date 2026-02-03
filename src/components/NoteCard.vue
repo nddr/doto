@@ -93,7 +93,6 @@ function handleAddTodo(noteId: number, event: Event) {
 
 // Note name editing
 function startEditingNote() {
-  if (props.isOld) return
   isEditingName.value = true
   editingName.value = props.note.name
   nextTick(() => {
@@ -118,7 +117,6 @@ function cancelEditingNote() {
 
 // Todo title editing
 function startEditingTodo(todoId: number, currentTitle: string) {
-  if (props.isOld) return
   editingTodoId.value = todoId
   editingTodoTitle.value = currentTitle
   nextTick(() => {
@@ -262,27 +260,24 @@ defineExpose({
         />
         <span
           v-else
-          class="flex items-center"
-          :class="isOld ? 'cursor-default' : 'cursor-text'"
+          class="flex items-center cursor-text"
           :style="{ color: theme.lavender }"
-          :tabindex="isOld ? -1 : 0"
-          :role="isOld ? undefined : 'button'"
-          :aria-label="isOld ? undefined : `Edit ${note.name}`"
+          tabindex="0"
+          role="button"
+          :aria-label="`Edit ${note.name}`"
           @click="startEditingNote"
           @keydown.enter="startEditingNote"
           @keydown.space.prevent="startEditingNote"
         >
           <button
-            class="w-8 h-8 mr-4 text-md flex items-center justify-center border transition-colors"
-            :class="isOld ? 'cursor-default' : 'cursor-pointer'"
+            class="w-8 h-8 mr-4 text-md flex items-center justify-center border transition-colors cursor-pointer"
             :style="{
               backgroundColor: theme.surface1,
               borderColor: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.surface2),
               color: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.overlay0),
             }"
-            :title="`Tag: ${note.tags?.[0] || 'none'}${isOld ? '' : ' (click to change)'}`"
-            :disabled="isOld"
-            @click.stop="!isOld && emit('cycle-tag', note.id, note.tags)"
+            :title="`Tag: ${note.tags?.[0] || 'none'} (click to change)`"
+            @click.stop="emit('cycle-tag', note.id, note.tags)"
           >
             {{ getNoteTagBadge(note) }}
           </button>
@@ -326,10 +321,9 @@ defineExpose({
               ::
             </span>
             <span
-              class="select-none"
-              :class="isOld ? 'cursor-default' : 'cursor-pointer'"
+              class="select-none cursor-pointer"
               :style="{ color: todo.completed ? theme.surface2 : theme.green }"
-              @click="!isOld && emit('toggle-todo', note.id, todo.id)"
+              @click="emit('toggle-todo', note.id, todo.id)"
             >
               [{{ todo.completed ? 'x' : ' ' }}]
             </span>
@@ -346,15 +340,14 @@ defineExpose({
             />
             <span
               v-else
-              class="flex-1 min-w-0 break-all"
-              :class="[{ 'line-through': todo.completed }, isOld ? 'cursor-default' : 'cursor-text']"
+              class="flex-1 min-w-0 break-all cursor-text"
+              :class="{ 'line-through': todo.completed }"
               :style="{ color: todo.completed ? theme.surface2 : theme.text }"
               @click="startEditingTodo(todo.id, todo.title)"
             >
               {{ todo.title }}
             </span>
             <button
-              v-if="!isOld"
               class="cursor-pointer md:hidden md:group-hover:block"
               :style="{ color: theme.overlay0 }"
               @click="emit('remove-todo', note.id, todo.id)"
@@ -380,10 +373,7 @@ defineExpose({
         </div>
 
         <!-- Add Todo Input -->
-        <div
-          v-if="!isOld"
-          class="mt-4"
-        >
+        <div class="mt-4">
           <input
             type="text"
             placeholder="Add todo..."
@@ -403,11 +393,9 @@ defineExpose({
       >
         <textarea
           :value="note.content"
-          :disabled="isOld"
           @input="emit('update-text-content', note.id, ($event.target as HTMLTextAreaElement).value)"
           placeholder="Write your note..."
           class="w-full bg-transparent outline-none resize-none scrollbar-none [grid-area:1/1/2/2] field-sizing-content text-note-textarea"
-          :class="isOld ? 'cursor-default' : ''"
           :style="{
             color: theme.text,
             backgroundImage: 'repeating-linear-gradient(transparent, transparent 1.4em, rgba(255, 255, 255, 0.05) 1.4em, rgba(255, 255, 255, 0.05) calc(1.4em + 1px))',
