@@ -382,13 +382,13 @@ defineExpose({
         <!-- Add Todo Input -->
         <div
           v-if="!isOld"
-          class="mt-3"
+          class="mt-4"
         >
           <input
             type="text"
-            placeholder="> Add todo..."
-            class="w-full bg-transparent outline-none"
-            :style="{ color: theme.overlay0 }"
+            placeholder="Add todo..."
+            class="w-full pl-8 bg-transparent outline-none add-todo-input"
+            :style="{ color: theme.overlay0, '--placeholder-color': theme.subtext0 }"
             @keydown.enter="handleAddTodo(note.id, $event)"
             @focus="($event.target as HTMLElement).style.color = theme.text"
             @blur="handleAddTodo(note.id, $event); ($event.target as HTMLElement).style.color = theme.overlay0"
@@ -406,12 +406,13 @@ defineExpose({
           :disabled="isOld"
           @input="emit('update-text-content', note.id, ($event.target as HTMLTextAreaElement).value)"
           placeholder="Write your note..."
-          class="w-full bg-transparent outline-none resize-none scrollbar-none [grid-area:1/1/2/2] field-sizing-content"
+          class="w-full bg-transparent outline-none resize-none scrollbar-none [grid-area:1/1/2/2] field-sizing-content text-note-textarea"
           :class="isOld ? 'cursor-default' : ''"
           :style="{
             color: theme.text,
             backgroundImage: 'repeating-linear-gradient(transparent, transparent 1.4em, rgba(255, 255, 255, 0.05) 1.4em, rgba(255, 255, 255, 0.05) calc(1.4em + 1px))',
             lineHeight: '1.4em',
+            '--placeholder-color': theme.subtext0,
           }"
         ></textarea>
       </div>
@@ -427,3 +428,11 @@ defineExpose({
     </div>
   </div>
 </template>
+
+<style scoped>
+.add-todo-input::placeholder,
+.text-note-textarea::placeholder {
+  color: var(--placeholder-color);
+  opacity: 1;
+}
+</style>
