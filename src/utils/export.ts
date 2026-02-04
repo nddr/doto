@@ -1,4 +1,5 @@
 import type { NoteType } from '@/composables/useTodoList'
+import { useTagStore } from '@/composables/useTagStore'
 
 /**
  * Backup file structure for JSON export/import
@@ -295,7 +296,9 @@ export function allNotesGroupedToMarkdown(notes: NoteType[]): string {
 
     // Each note as H2
     for (const note of dayNotes) {
-      const tagSuffix = note.tags && note.tags.length > 0 ? ` [${note.tags[0]}]` : ''
+      const tagId = note.tags?.[0]
+      const tagName = tagId ? (useTagStore().getTag(tagId)?.name ?? tagId) : null
+      const tagSuffix = tagName ? ` [${tagName}]` : ''
       lines.push(`## ${note.name}${tagSuffix}`)
 
       if (note.type === 'task') {

@@ -1,6 +1,7 @@
 import { ref, watch } from 'vue'
 
 import { toLocalDateString, toLocalISOString } from '@/utils/date'
+import { useTagStore } from '@/composables/useTagStore'
 
 export interface Note {
   id: number
@@ -102,6 +103,31 @@ function advanceNotes() {
 }
 
 advanceNotes()
+
+// One-time migration from hardcoded 'work'/'personal' tags to tag store IDs
+if (!localStorage.getItem('doto-tags-migrated')) {
+  const hasOldTags = notes.value.some(
+    (n) => n.tags?.includes('work') || n.tags?.includes('personal'),
+  )
+  if (hasOldTags) {
+    const { addTag, tags: existingTags } = useTagStore()
+    // Create default tags if they don't already exist
+    let workTag = existingTags.value.find((t) => t.name === 'Work')
+    if (!workTag) workTag = addTag('Work', 'green')
+    let personalTag = existingTags.value.find((t) => t.name === 'Personal')
+    if (!personalTag) personalTag = addTag('Personal', 'peach')
+
+    for (const note of notes.value) {
+      if (note.tags?.includes('work')) {
+        note.tags = [workTag.id]
+      } else if (note.tags?.includes('personal')) {
+        note.tags = [personalTag.id]
+      }
+    }
+    saveToStorage(notes.value)
+  }
+  localStorage.setItem('doto-tags-migrated', '1')
+}
 
 watch(notes, (newNotes) => saveToStorage(newNotes), { deep: true })
 
@@ -262,13 +288,13 @@ export function useTodoList() {
     }
   }
 
-  function updateNoteTag(noteId: number, tag: 'work' | 'personal' | null) {
+  function updateNoteTag(noteId: number, tagId: string | null) {
     const note = notes.value.find((n) => n.id === noteId)
     if (note) {
-      if (tag === null) {
+      if (tagId === null) {
         note.tags = []
       } else {
-        note.tags = [tag]
+        note.tags = [tagId]
       }
     }
   }

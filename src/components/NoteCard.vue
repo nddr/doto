@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
-import { useTheme } from '@/composables/useTheme'
+import { ref, computed, nextTick } from 'vue'
+import { useTheme, type CatppuccinTheme } from '@/composables/useTheme'
 import { useToast } from '@/composables/useToast'
+import { useTagStore } from '@/composables/useTagStore'
 import type { NoteType } from '@/composables/useTodoList'
 import { exportNoteAsFile, copyNoteToClipboard } from '@/utils/export'
 
@@ -19,7 +20,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'rename-note': [noteId: number, name: string]
   'rename-todo': [noteId: number, todoId: number, title: string]
-  'cycle-tag': [noteId: number, tags: string[] | undefined]
+  'update-tag': [noteId: number, tagId: string | null]
   'remove-note': [noteId: number]
   'toggle-todo': [noteId: number, todoId: number]
   'add-todo': [noteId: number, title: string]
@@ -39,18 +40,20 @@ const emit = defineEmits<{
 
 const { theme } = useTheme()
 const toast = useToast()
+const { tags: allTags, getTag } = useTagStore()
 
 // Local editing state
 const isEditingName = ref(false)
 const editingName = ref('')
 const editingTodoId = ref<number | null>(null)
 const editingTodoTitle = ref('')
+const showTagDropdown = ref(false)
 
-function getNoteTagBadge(note: NoteType): string {
-  if (note.tags?.includes('work')) return 'W'
-  if (note.tags?.includes('personal')) return 'P'
-  return '*'
-}
+const noteTag = computed(() => {
+  const tagId = props.note.tags?.[0]
+  if (!tagId) return null
+  return getTag(tagId) ?? null
+})
 
 // Track enter/leave balance to handle event bubbling
 let dragEnterCount = 0
@@ -174,7 +177,7 @@ defineExpose({
   <div
     class="relative flex-1 min-w-[calc(25%-12px)] max-w-full border pt-8 transition-colors flex"
     :style="{
-      borderColor: isDragging ? 'white' : (isDragOver ? theme.lavender : theme.surface1),
+      borderColor: isDragging ? 'white' : (isDragOver ? theme.lavender : (noteTag ? theme[noteTag.color as keyof CatppuccinTheme] : theme.surface1)),
       backgroundColor: theme.surface0,
       opacity: isDragging ? 0.5 : (isOld ? 0.35 : 1),
       filter: isOld ? 'grayscale(0.6)' : 'none',
@@ -277,18 +280,76 @@ defineExpose({
           @keydown.enter="startEditingNote"
           @keydown.space.prevent="startEditingNote"
         >
-          <button
-            class="w-8 h-8 mr-4 text-md flex items-center justify-center border transition-colors cursor-pointer"
-            :style="{
-              backgroundColor: theme.surface1,
-              borderColor: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.surface2),
-              color: note.tags?.includes('work') ? theme.green : (note.tags?.includes('personal') ? theme.peach : theme.overlay0),
-            }"
-            :title="`Tag: ${note.tags?.[0] || 'none'} (click to change)`"
-            @click.stop="emit('cycle-tag', note.id, note.tags)"
-          >
-            {{ getNoteTagBadge(note) }}
-          </button>
+          <!-- Tag badge button -->
+          <div class="relative mr-4">
+            <!-- Backdrop for tag dropdown -->
+            <div
+              v-if="showTagDropdown"
+              class="fixed inset-0 z-10"
+              @click.stop="showTagDropdown = false"
+            />
+            <button
+              class="h-8 px-2 text-sm flex items-center gap-1 border transition-colors cursor-pointer relative z-20"
+              :style="{
+                backgroundColor: theme.surface1,
+                borderColor: noteTag ? theme[noteTag.color as keyof CatppuccinTheme] : theme.surface2,
+                color: noteTag ? theme[noteTag.color as keyof CatppuccinTheme] : theme.overlay0,
+              }"
+              :title="`Tag: ${noteTag?.name || 'none'} (click to change)`"
+              @click.stop="showTagDropdown = !showTagDropdown"
+            >
+              <span
+                v-if="noteTag"
+                class="w-2.5 h-2.5 rounded-full shrink-0"
+                :style="{ backgroundColor: theme[noteTag.color as keyof CatppuccinTheme] }"
+              ></span>
+              {{ noteTag ? noteTag.name : '+' }}
+            </button>
+
+            <!-- Tag dropdown -->
+            <div
+              v-if="showTagDropdown"
+              class="absolute top-full left-0 mt-1 border min-w-36 z-20"
+              :style="{
+                borderColor: theme.surface1,
+                backgroundColor: theme.surface0,
+              }"
+            >
+              <!-- None option -->
+              <button
+                class="block w-full px-3 py-1 text-left text-sm cursor-pointer transition-colors whitespace-nowrap"
+                :style="{
+                  color: !noteTag ? theme.lavender : theme.text,
+                  backgroundColor: !noteTag ? theme.surface1 : 'transparent',
+                }"
+                @click.stop="emit('update-tag', note.id, null); showTagDropdown = false"
+                @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+                @mouseleave="($event.target as HTMLElement).style.backgroundColor = !noteTag ? theme.surface1 : 'transparent'"
+              >
+                None
+              </button>
+
+              <!-- Tag options -->
+              <button
+                v-for="tag in allTags"
+                :key="tag.id"
+                class="flex items-center gap-2 w-full px-3 py-1 text-left text-sm cursor-pointer transition-colors whitespace-nowrap"
+                :style="{
+                  color: noteTag?.id === tag.id ? theme.lavender : theme.text,
+                  backgroundColor: noteTag?.id === tag.id ? theme.surface1 : 'transparent',
+                }"
+                @click.stop="emit('update-tag', note.id, tag.id); showTagDropdown = false"
+                @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+                @mouseleave="($event.target as HTMLElement).style.backgroundColor = noteTag?.id === tag.id ? theme.surface1 : 'transparent'"
+              >
+                <span
+                  class="w-3 h-3 rounded-full shrink-0"
+                  :style="{ backgroundColor: theme[tag.color as keyof CatppuccinTheme] }"
+                ></span>
+                {{ tag.name }}
+              </button>
+            </div>
+          </div>
 
           {{ note.name }}
         </span>

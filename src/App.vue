@@ -29,7 +29,7 @@ const draggedTodo = ref<{ noteId: number; todoIndex: number } | null>(null)
 const dragOverTodoIndex = ref<number | null>(null)
 const dragOverNoteId = ref<number | null>(null)
 const selectedDate = ref<string | null>(toLocalDateString())
-const tagFilter = ref<'all' | 'work' | 'personal'>('all')
+const tagFilter = ref<string>('all')
 const weekOffset = ref(0)
 
 const weekDates = computed(() => {
@@ -98,15 +98,8 @@ function setNoteCardRef(noteId: number, el: InstanceType<typeof NoteCard> | null
   }
 }
 
-function cycleNoteTag(noteId: number, currentTags?: string[]) {
-  const currentTag = currentTags?.[0]
-  if (!currentTag) {
-    updateNoteTag(noteId, 'work')
-  } else if (currentTag === 'work') {
-    updateNoteTag(noteId, 'personal')
-  } else {
-    updateNoteTag(noteId, null)
-  }
+function handleUpdateTag(noteId: number, tagId: string | null) {
+  updateNoteTag(noteId, tagId)
 }
 
 function isOldNote(note: typeof notes.value[0]): boolean {
@@ -375,7 +368,7 @@ onUnmounted(() => {
         :drag-over-note-id="dragOverNoteId"
         @rename-note="renameNote"
         @rename-todo="renameTodo"
-        @cycle-tag="cycleNoteTag"
+        @update-tag="handleUpdateTag"
         @remove-note="removeNote"
         @toggle-todo="toggleTodo"
         @add-todo="addTodo"
