@@ -300,6 +300,14 @@ export function useTodoList() {
     }
   }
 
+  function removeTagFromAllNotes(tagId: string) {
+    for (const note of notes.value) {
+      if (note.tags?.includes(tagId)) {
+        note.tags = note.tags.filter((t) => t !== tagId)
+      }
+    }
+  }
+
   function toggleAutoAdvance(noteId: number) {
     const note = notes.value.find((n) => n.id === noteId)
     if (note) {
@@ -392,6 +400,7 @@ export function useTodoList() {
     updateTextContent,
     updateNoteDate,
     updateNoteTag,
+    removeTagFromAllNotes,
     toggleAutoAdvance,
     addTodo,
     removeTodo,

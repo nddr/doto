@@ -2,8 +2,9 @@
 import { ref } from 'vue'
 import { useTheme, type CatppuccinTheme } from '@/composables/useTheme'
 import { useTagStore, TAG_COLORS, type Tag } from '@/composables/useTagStore'
+import { useTodoList } from '@/composables/useTodoList'
 
-defineProps<{
+const props = defineProps<{
   modelValue: string
 }>()
 
@@ -12,7 +13,8 @@ const emit = defineEmits<{
 }>()
 
 const { theme } = useTheme()
-const { tags, addTag, updateTag } = useTagStore()
+const { tags, addTag, updateTag, removeTag } = useTagStore()
+const { removeTagFromAllNotes } = useTodoList()
 
 const showDropdown = ref(false)
 const showCreateForm = ref(false)
@@ -74,6 +76,18 @@ function handleUpdateTag() {
   const name = editTagName.value.trim()
   if (!name || !editingTag.value) return
   updateTag(editingTag.value.id, { name, color: editTagColor.value })
+  editingTag.value = null
+}
+
+function handleDeleteTag() {
+  if (!editingTag.value) return
+  const tagId = editingTag.value.id
+  // If deleted tag is currently selected, reset filter to 'all'
+  if (props.modelValue === tagId) {
+    emit('update:modelValue', 'all')
+  }
+  removeTagFromAllNotes(tagId)
+  removeTag(tagId)
   editingTag.value = null
 }
 
@@ -279,7 +293,19 @@ function getSelectedColor(modelValue: string): string | null {
         ></button>
       </div>
 
-      <div class="flex gap-2 justify-end">
+      <div class="flex gap-2 justify-between">
+        <button
+          class="px-2 py-1 border cursor-pointer transition-colors"
+          :style="{
+            borderColor: theme.red,
+            color: theme.red,
+          }"
+          @click="handleDeleteTag"
+          @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.red; ($event.target as HTMLElement).style.color = theme.base"
+          @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'; ($event.target as HTMLElement).style.color = theme.red"
+        >
+          Delete
+        </button>
         <button
           class="px-2 py-1 border cursor-pointer transition-colors"
           :style="{
