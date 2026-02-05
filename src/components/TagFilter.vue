@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useTheme, type CatppuccinTheme } from '@/composables/useTheme'
-import { useTagStore, TAG_COLORS } from '@/composables/useTagStore'
+import { useTagStore, TAG_COLORS, type Tag } from '@/composables/useTagStore'
 
 defineProps<{
   modelValue: string
@@ -12,21 +12,27 @@ const emit = defineEmits<{
 }>()
 
 const { theme } = useTheme()
-const { tags, addTag } = useTagStore()
+const { tags, addTag, updateTag } = useTagStore()
 
 const showDropdown = ref(false)
 const showCreateForm = ref(false)
 const newTagName = ref('')
 const newTagColor = ref<keyof CatppuccinTheme>('green')
 
+const editingTag = ref<Tag | null>(null)
+const editTagName = ref('')
+const editTagColor = ref<keyof CatppuccinTheme>('green')
+
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value
   showCreateForm.value = false
+  editingTag.value = null
 }
 
 function closeAll() {
   showDropdown.value = false
   showCreateForm.value = false
+  editingTag.value = null
 }
 
 function selectTag(tagId: string) {
@@ -37,6 +43,7 @@ function selectTag(tagId: string) {
 function openCreateForm() {
   showCreateForm.value = true
   showDropdown.value = false
+  editingTag.value = null
   newTagName.value = ''
   newTagColor.value = 'green'
 }
@@ -52,6 +59,26 @@ function handleCreateTag() {
 function cancelCreate() {
   showCreateForm.value = false
   newTagName.value = ''
+}
+
+function openEditForm(tag: Tag, event: Event) {
+  event.stopPropagation()
+  editingTag.value = tag
+  editTagName.value = tag.name
+  editTagColor.value = tag.color
+  showDropdown.value = false
+  showCreateForm.value = false
+}
+
+function handleUpdateTag() {
+  const name = editTagName.value.trim()
+  if (!name || !editingTag.value) return
+  updateTag(editingTag.value.id, { name, color: editTagColor.value })
+  editingTag.value = null
+}
+
+function cancelEdit() {
+  editingTag.value = null
 }
 
 function getSelectedLabel(modelValue: string): string {
@@ -70,7 +97,7 @@ function getSelectedColor(modelValue: string): string | null {
 <template>
   <!-- Backdrop -->
   <div
-    v-if="showDropdown || showCreateForm"
+    v-if="showDropdown || showCreateForm || editingTag"
     class="fixed inset-0 z-10"
     @click="closeAll"
   />
@@ -133,24 +160,33 @@ function getSelectedColor(modelValue: string): string | null {
       </button>
 
       <!-- Tag options -->
-      <button
+      <div
         v-for="tag in tags"
         :key="tag.id"
-        class="flex items-center gap-2 w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+        class="flex items-center gap-2 w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap group"
         :style="{
           color: modelValue === tag.id ? theme.lavender : theme.text,
           backgroundColor: modelValue === tag.id ? theme.surface1 : 'transparent',
         }"
         @click="selectTag(tag.id)"
-        @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-        @mouseleave="($event.target as HTMLElement).style.backgroundColor = modelValue === tag.id ? theme.surface1 : 'transparent'"
+        @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface1"
+        @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = modelValue === tag.id ? theme.surface1 : 'transparent'"
       >
         <span
           class="w-3 h-3 shrink-0"
           :style="{ backgroundColor: theme[tag.color as keyof CatppuccinTheme] }"
         ></span>
-        {{ tag.name }}
-      </button>
+        <span class="flex-1">{{ tag.name }}</span>
+        <button
+          class="opacity-0 group-hover:opacity-100 transition-opacity px-1 text-2xl"
+          :style="{ color: theme.text }"
+          @click="openEditForm(tag, $event)"
+          @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
+          @mouseleave="($event.target as HTMLElement).style.color = theme.text"
+        >
+          ✏️
+        </button>
+      </div>
     </div>
 
     <!-- Create tag form -->
@@ -201,6 +237,58 @@ function getSelectedColor(modelValue: string): string | null {
           @click="handleCreateTag"
         >
           Create
+        </button>
+      </div>
+    </div>
+
+    <!-- Edit tag form -->
+    <div
+      v-if="editingTag"
+      class="absolute top-full right-0 mt-1 border p-3 min-w-64"
+      :style="{
+        borderColor: theme.surface1,
+        backgroundColor: theme.surface0,
+      }"
+    >
+      <input
+        v-model="editTagName"
+        type="text"
+        placeholder="Tag name"
+        class="w-full px-2 py-1 mb-4 bg-transparent border outline-none"
+        :style="{
+          borderColor: theme.surface2,
+          color: theme.text,
+        }"
+        @keydown.enter="handleUpdateTag"
+        @keydown.escape="cancelEdit"
+      />
+
+      <!-- Color palette -->
+      <div class="grid grid-cols-7 gap-1 mb-4">
+        <button
+          v-for="color in TAG_COLORS"
+          :key="color"
+          class="w-6 h-6 cursor-pointer transition-transform"
+          :style="{
+            backgroundColor: theme[color as keyof CatppuccinTheme],
+            transform: editTagColor === color ? 'scale(1.25)' : 'scale(1)',
+            outline: editTagColor === color ? `2px solid ${theme.text}` : 'none',
+            outlineOffset: '1px',
+          }"
+          @click="editTagColor = color"
+        ></button>
+      </div>
+
+      <div class="flex gap-2 justify-end">
+        <button
+          class="px-2 py-1 border cursor-pointer transition-colors"
+          :style="{
+            borderColor: theme.surface2,
+            color: theme.text,
+          }"
+          @click="handleUpdateTag"
+        >
+          Save
         </button>
       </div>
     </div>

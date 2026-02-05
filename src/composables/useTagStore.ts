@@ -65,6 +65,14 @@ export function useTagStore() {
     }
   }
 
+  function updateTag(tagId: string, updates: { name?: string; color?: keyof CatppuccinTheme }) {
+    const tag = tags.value.find((t) => t.id === tagId)
+    if (tag) {
+      if (updates.name !== undefined) tag.name = updates.name
+      if (updates.color !== undefined) tag.color = updates.color
+    }
+  }
+
   function getTag(tagId: string): Tag | undefined {
     return tags.value.find((t) => t.id === tagId)
   }
@@ -73,6 +81,7 @@ export function useTagStore() {
     tags,
     addTag,
     removeTag,
+    updateTag,
     getTag,
   }
 }
