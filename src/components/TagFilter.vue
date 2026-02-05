@@ -193,13 +193,6 @@ function getSelectedColor(modelValue: string): string | null {
 
       <div class="flex gap-2 justify-end">
         <button
-          class="px-2 py-1 cursor-pointer transition-colors"
-          :style="{ color: theme.overlay0 }"
-          @click="cancelCreate"
-        >
-          Cancel
-        </button>
-        <button
           class="px-2 py-1 border cursor-pointer transition-colors"
           :style="{
             borderColor: theme.surface2,

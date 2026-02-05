@@ -94,7 +94,7 @@ function selectWeekLength(length: '5' | '7') {
     class="fixed inset-0 z-10"
     @click="closeMenu"
   />
-  <div class="fixed top-4 right-6 z-20">
+  <div class="fixed top-4 right-6 z-30">
     <!-- Settings Button -->
     <button
       class="px-3 py-1 border cursor-pointer transition-colors"
