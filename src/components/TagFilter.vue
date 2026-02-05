@@ -178,7 +178,7 @@ function getSelectedColor(modelValue: string): string | null {
         ></span>
         <span class="flex-1">{{ tag.name }}</span>
         <button
-          class="opacity-0 group-hover:opacity-100 transition-opacity px-1 text-2xl"
+          class="opacity-0 group-hover:opacity-100 transition-opacity ml-2 px-1 text-2xl hover:cursor-pointer"
           :style="{ color: theme.text }"
           @click="openEditForm(tag, $event)"
           @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
