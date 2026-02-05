@@ -10,6 +10,7 @@ export interface Note {
   currentDate?: string
   tags?: string[]
   autoAdvance?: boolean
+  archived?: boolean
 }
 
 export interface TaskNote extends Note {
@@ -310,6 +311,10 @@ export function useTodoList() {
     const sourceNote = notes.value.find((n) => n.id === noteId)
     if (!sourceNote || sourceNote.type !== 'task') return
 
+    // Archive the original note
+    sourceNote.archived = true
+    sourceNote.autoAdvance = false
+
     const incompleteTodos = sourceNote.todos
       .filter((t) => !t.completed)
       .map((t) => ({
@@ -326,7 +331,7 @@ export function useTodoList() {
       currentDate: targetDate,
       createdAt: toLocalISOString(),
       tags: sourceNote.tags ? [...sourceNote.tags] : undefined,
-      autoAdvance: sourceNote.autoAdvance,
+      autoAdvance: true,
       todos: incompleteTodos,
     })
   }
