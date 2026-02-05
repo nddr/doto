@@ -298,11 +298,6 @@ defineExpose({
               :title="`Tag: ${noteTag?.name || 'none'} (click to change)`"
               @click.stop="showTagDropdown = !showTagDropdown"
             >
-              <span
-                v-if="noteTag"
-                class="w-2.5 h-2.5 rounded-full shrink-0"
-                :style="{ backgroundColor: theme[noteTag.color as keyof CatppuccinTheme] }"
-              ></span>
               {{ noteTag ? noteTag.name : '+' }}
             </button>
 

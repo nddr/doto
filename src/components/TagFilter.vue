@@ -78,7 +78,7 @@ function getSelectedColor(modelValue: string): string | null {
   <div class="flex items-center gap-2 relative z-20">
     <!-- + Tag button -->
     <button
-      class="px-2 py-1 text-sm border cursor-pointer transition-colors"
+      class="px-3 py-1 border cursor-pointer transition-colors"
       :style="{
         borderColor: theme.surface1,
         backgroundColor: theme.surface0,
@@ -93,7 +93,7 @@ function getSelectedColor(modelValue: string): string | null {
 
     <!-- Dropdown trigger -->
     <button
-      class="flex items-center gap-2 px-2 py-1 text-sm border cursor-pointer transition-colors"
+      class="flex items-center gap-2 px-2 py-1 border cursor-pointer transition-colors"
       :style="{
         borderColor: theme.surface1,
         backgroundColor: theme.surface0,
@@ -103,7 +103,7 @@ function getSelectedColor(modelValue: string): string | null {
     >
       <span
         v-if="getSelectedColor(modelValue)"
-        class="w-3 h-3 rounded-full inline-block"
+        class="w-3 h-3 inline-block"
         :style="{ backgroundColor: getSelectedColor(modelValue)! }"
       ></span>
       Tag: {{ getSelectedLabel(modelValue) }}
@@ -120,7 +120,7 @@ function getSelectedColor(modelValue: string): string | null {
     >
       <!-- All option -->
       <button
-        class="block w-full px-3 py-1 text-left text-sm cursor-pointer transition-colors whitespace-nowrap"
+        class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
         :style="{
           color: modelValue === 'all' ? theme.lavender : theme.text,
           backgroundColor: modelValue === 'all' ? theme.surface1 : 'transparent',
@@ -136,7 +136,7 @@ function getSelectedColor(modelValue: string): string | null {
       <button
         v-for="tag in tags"
         :key="tag.id"
-        class="flex items-center gap-2 w-full px-3 py-1 text-left text-sm cursor-pointer transition-colors whitespace-nowrap"
+        class="flex items-center gap-2 w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
         :style="{
           color: modelValue === tag.id ? theme.lavender : theme.text,
           backgroundColor: modelValue === tag.id ? theme.surface1 : 'transparent',
@@ -146,7 +146,7 @@ function getSelectedColor(modelValue: string): string | null {
         @mouseleave="($event.target as HTMLElement).style.backgroundColor = modelValue === tag.id ? theme.surface1 : 'transparent'"
       >
         <span
-          class="w-3 h-3 rounded-full shrink-0"
+          class="w-3 h-3 shrink-0"
           :style="{ backgroundColor: theme[tag.color as keyof CatppuccinTheme] }"
         ></span>
         {{ tag.name }}
@@ -156,7 +156,7 @@ function getSelectedColor(modelValue: string): string | null {
     <!-- Create tag form -->
     <div
       v-if="showCreateForm"
-      class="absolute top-full right-0 mt-1 border p-3 min-w-56"
+      class="absolute top-full right-0 mt-1 border p-3 min-w-64"
       :style="{
         borderColor: theme.surface1,
         backgroundColor: theme.surface0,
@@ -166,7 +166,7 @@ function getSelectedColor(modelValue: string): string | null {
         v-model="newTagName"
         type="text"
         placeholder="Tag name"
-        class="w-full px-2 py-1 mb-2 text-sm bg-transparent border outline-none"
+        class="w-full px-2 py-1 mb-4 bg-transparent border outline-none"
         :style="{
           borderColor: theme.surface2,
           color: theme.text,
@@ -176,11 +176,11 @@ function getSelectedColor(modelValue: string): string | null {
       />
 
       <!-- Color palette -->
-      <div class="grid grid-cols-7 gap-1 mb-2">
+      <div class="grid grid-cols-7 gap-1 mb-4">
         <button
           v-for="color in TAG_COLORS"
           :key="color"
-          class="w-6 h-6 rounded-full cursor-pointer transition-transform"
+          class="w-6 h-6 cursor-pointer transition-transform"
           :style="{
             backgroundColor: theme[color as keyof CatppuccinTheme],
             transform: newTagColor === color ? 'scale(1.25)' : 'scale(1)',
@@ -193,14 +193,14 @@ function getSelectedColor(modelValue: string): string | null {
 
       <div class="flex gap-2 justify-end">
         <button
-          class="px-2 py-1 text-sm cursor-pointer transition-colors"
+          class="px-2 py-1 cursor-pointer transition-colors"
           :style="{ color: theme.overlay0 }"
           @click="cancelCreate"
         >
           Cancel
         </button>
         <button
-          class="px-2 py-1 text-sm border cursor-pointer transition-colors"
+          class="px-2 py-1 border cursor-pointer transition-colors"
           :style="{
             borderColor: theme.surface2,
             color: theme.text,
