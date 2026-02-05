@@ -385,12 +385,14 @@ defineExpose({
               ::
             </span>
             <span
-              class="select-none cursor-pointer"
-              :style="{ color: todo.completed ? theme.surface2 : theme.green }"
+              class="select-none cursor-pointer text-2xl flex items-center justify-center w-6 h-6"
+              :style="{
+                color: todo.status === 'completed' ? theme.green
+                  : todo.status === 'in-progress' ? theme.blue
+                  : theme.text
+              }"
               @click="emit('toggle-todo', note.id, todo.id)"
-            >
-              [{{ todo.completed ? 'x' : ' ' }}]
-            </span>
+            >{{ todo.status === 'completed' ? '●' : todo.status === 'in-progress' ? '◐' : '○' }}</span>
             <input
               v-if="editingTodoId === todo.id"
               v-model="editingTodoTitle"
@@ -405,8 +407,8 @@ defineExpose({
             <span
               v-else
               class="flex-1 min-w-0 break-all cursor-text"
-              :class="{ 'line-through': todo.completed }"
-              :style="{ color: todo.completed ? theme.surface2 : theme.text }"
+              :class="{ 'line-through': todo.status === 'completed' }"
+              :style="{ color: todo.status === 'completed' ? theme.surface2 : theme.text }"
               @click="startEditingTodo(todo.id, todo.title)"
             >
               {{ todo.title }}

@@ -23,10 +23,12 @@ export interface TextNote extends Note {
   content: string
 }
 
+export type TodoStatus = 'incomplete' | 'in-progress' | 'completed'
+
 export interface Todo {
   id: number
   title: string
-  completed: boolean
+  status: TodoStatus
   completedAt?: string
   createdAt?: string
 }
@@ -35,11 +37,28 @@ export type NoteType = TaskNote | TextNote
 
 const STORAGE_KEY = 'doto-notes'
 
+function migrateTodoStatus(notes: NoteType[]): NoteType[] {
+  for (const note of notes) {
+    if (note.type === 'task') {
+      for (const todo of note.todos) {
+        // Migrate legacy 'completed' boolean to 'status' string
+        const legacyTodo = todo as unknown as { completed?: boolean; status?: TodoStatus }
+        if (typeof legacyTodo.completed === 'boolean' && legacyTodo.status === undefined) {
+          todo.status = legacyTodo.completed ? 'completed' : 'incomplete'
+          delete legacyTodo.completed
+        }
+      }
+    }
+  }
+  return notes
+}
+
 function loadFromStorage(): NoteType[] {
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored) {
     try {
-      return JSON.parse(stored)
+      const parsed = JSON.parse(stored)
+      return migrateTodoStatus(parsed)
     } catch {
       return []
     }
@@ -49,7 +68,7 @@ function loadFromStorage(): NoteType[] {
       id: 1,
       type: 'task',
       name: 'My First Tasks',
-      todos: [{ id: 1, title: 'Make my bed', completed: false }],
+      todos: [{ id: 1, title: 'Make my bed', status: 'incomplete' as TodoStatus }],
       autoAdvance: true,
       createdAt: toLocalISOString(),
       currentDate: toLocalDateString(),
@@ -89,7 +108,7 @@ function advanceNotes() {
     if (note.autoAdvance && note.currentDate && note.currentDate < today) {
       if (note.type === 'task') {
         // Only advance if there are incomplete todos
-        const hasIncompleteTodos = note.todos.some((todo) => !todo.completed)
+        const hasIncompleteTodos = note.todos.some((todo) => todo.status !== 'completed')
         if (hasIncompleteTodos) {
           note.currentDate = today
         }
@@ -211,7 +230,7 @@ export function useTodoList() {
       note.todos.push({
         id: nextTodoId++,
         title,
-        completed: false,
+        status: 'incomplete',
         createdAt: toLocalISOString(),
       })
     }
@@ -232,8 +251,14 @@ export function useTodoList() {
     if (note && note.type === 'task') {
       const todo = note.todos.find((t) => t.id === todoId)
       if (todo) {
-        todo.completed = !todo.completed
-        todo.completedAt = todo.completed ? toLocalISOString() : undefined
+        // Cycle through states: incomplete → in-progress → completed → incomplete
+        const nextStatus: Record<TodoStatus, TodoStatus> = {
+          'incomplete': 'in-progress',
+          'in-progress': 'completed',
+          'completed': 'incomplete',
+        }
+        todo.status = nextStatus[todo.status]
+        todo.completedAt = todo.status === 'completed' ? toLocalISOString() : undefined
       }
     }
   }
@@ -324,11 +349,11 @@ export function useTodoList() {
     sourceNote.autoAdvance = false
 
     const incompleteTodos = sourceNote.todos
-      .filter((t) => !t.completed)
+      .filter((t) => t.status !== 'completed')
       .map((t) => ({
         id: nextTodoId++,
         title: t.title,
-        completed: false,
+        status: 'incomplete' as TodoStatus,
         createdAt: toLocalISOString(),
       }))
 

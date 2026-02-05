@@ -56,8 +56,11 @@ function validateNote(note: unknown, index: number): string | null {
       if (typeof todo.title !== 'string') {
         return `Note at index ${index}, todo at index ${i}: missing or invalid title`
       }
-      if (typeof todo.completed !== 'boolean') {
-        return `Note at index ${index}, todo at index ${i}: missing or invalid completed field`
+      // Accept both new 'status' field and legacy 'completed' boolean
+      const hasStatus = typeof todo.status === 'string' && ['incomplete', 'in-progress', 'completed'].includes(todo.status as string)
+      const hasLegacyCompleted = typeof todo.completed === 'boolean'
+      if (!hasStatus && !hasLegacyCompleted) {
+        return `Note at index ${index}, todo at index ${i}: missing or invalid status/completed field`
       }
     }
   }
@@ -137,7 +140,7 @@ export function noteToMarkdown(note: NoteType): string {
 
   if (note.type === 'task') {
     for (const todo of note.todos) {
-      const checkbox = todo.completed ? '[x]' : '[ ]'
+      const checkbox = todo.status === 'completed' ? '[x]' : todo.status === 'in-progress' ? '[-]' : '[ ]'
       lines.push(`- ${checkbox} ${todo.title}`)
     }
   } else {
@@ -167,7 +170,7 @@ export function allNotesToMarkdown(notes: NoteType[]): string {
 
     if (note.type === 'task') {
       for (const todo of note.todos) {
-        const checkbox = todo.completed ? '[x]' : '[ ]'
+        const checkbox = todo.status === 'completed' ? '[x]' : todo.status === 'in-progress' ? '[-]' : '[ ]'
         lines.push(`- ${checkbox} ${todo.title}`)
       }
     } else {
@@ -248,7 +251,7 @@ export function notesForDayToMarkdown(date: string, notes: NoteType[]): string {
 
     if (note.type === 'task') {
       for (const todo of note.todos) {
-        const checkbox = todo.completed ? '[x]' : '[ ]'
+        const checkbox = todo.status === 'completed' ? '[x]' : todo.status === 'in-progress' ? '[-]' : '[ ]'
         lines.push(`- ${checkbox} ${todo.title}`)
       }
     } else {
@@ -303,7 +306,7 @@ export function allNotesGroupedToMarkdown(notes: NoteType[]): string {
 
       if (note.type === 'task') {
         for (const todo of note.todos) {
-          const checkbox = todo.completed ? '[x]' : '[ ]'
+          const checkbox = todo.status === 'completed' ? '[x]' : todo.status === 'in-progress' ? '[-]' : '[ ]'
           lines.push(`- ${checkbox} ${todo.title}`)
         }
       } else {
