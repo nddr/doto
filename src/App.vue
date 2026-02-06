@@ -29,7 +29,8 @@ const draggedTodo = ref<{ noteId: number; todoIndex: number } | null>(null)
 const dragOverTodoIndex = ref<number | null>(null)
 const dragOverNoteId = ref<number | null>(null)
 const selectedDate = ref<string | null>(toLocalDateString())
-const tagFilter = ref<string>('all')
+const tagFilter = ref<string>(localStorage.getItem('doto-tag-filter') ?? 'all')
+watch(tagFilter, (v) => localStorage.setItem('doto-tag-filter', v))
 const weekOffset = ref(0)
 
 const allDays = [
