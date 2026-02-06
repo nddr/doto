@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useTodoList } from '@/composables/useTodoList'
 import { useTheme } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
@@ -32,21 +32,36 @@ const selectedDate = ref<string | null>(toLocalDateString())
 const tagFilter = ref<string>('all')
 const weekOffset = ref(0)
 
+const allDays = [
+  { full: 'Monday', short: 'Mon', letter: 'M' },
+  { full: 'Tuesday', short: 'Tue', letter: 'T' },
+  { full: 'Wednesday', short: 'Wed', letter: 'W' },
+  { full: 'Thursday', short: 'Thu', letter: 'T' },
+  { full: 'Friday', short: 'Fri', letter: 'F' },
+  { full: 'Saturday', short: 'Sat', letter: 'S' },
+  { full: 'Sunday', short: 'Sun', letter: 'S' },
+]
+
 const weekDates = computed(() => {
   const today = new Date()
+
+  if (weekLength.value === '1') {
+    const targetDate = new Date(today)
+    targetDate.setDate(today.getDate() + weekOffset.value)
+    const dayIndex = (targetDate.getDay() + 6) % 7 // 0=Mon
+    const dayInfo = allDays[dayIndex]!
+    return [{
+      full: dayInfo.full,
+      short: dayInfo.short,
+      letter: dayInfo.letter,
+      date: toLocalDateString(targetDate),
+      dayOfMonth: targetDate.getDate(),
+    }]
+  }
+
   const dayOfWeek = today.getDay() // 0 = Sunday
   const monday = new Date(today)
   monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7) + (weekOffset.value * 7))
-
-  const allDays = [
-    { full: 'Monday', short: 'Mon', letter: 'M' },
-    { full: 'Tuesday', short: 'Tue', letter: 'T' },
-    { full: 'Wednesday', short: 'Wed', letter: 'W' },
-    { full: 'Thursday', short: 'Thu', letter: 'T' },
-    { full: 'Friday', short: 'Fri', letter: 'F' },
-    { full: 'Saturday', short: 'Sat', letter: 'S' },
-    { full: 'Sunday', short: 'Sun', letter: 'S' },
-  ]
 
   const days = weekLength.value === '5' ? allDays.slice(0, 5) : allDays
 
@@ -65,6 +80,11 @@ const todayDate = computed(() => toLocalDateString())
 
 const currentMonth = computed(() => {
   const today = new Date()
+  if (weekLength.value === '1') {
+    const targetDate = new Date(today)
+    targetDate.setDate(today.getDate() + weekOffset.value)
+    return targetDate.toLocaleDateString('en-US', { month: 'long' })
+  }
   const dayOfWeek = today.getDay()
   const monday = new Date(today)
   monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7) + (weekOffset.value * 7))
@@ -73,6 +93,11 @@ const currentMonth = computed(() => {
 
 const currentYear = computed(() => {
   const today = new Date()
+  if (weekLength.value === '1') {
+    const targetDate = new Date(today)
+    targetDate.setDate(today.getDate() + weekOffset.value)
+    return targetDate.getFullYear()
+  }
   const dayOfWeek = today.getDay()
   const monday = new Date(today)
   monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7) + (weekOffset.value * 7))
@@ -88,6 +113,16 @@ const filteredNotes = computed(() => {
     result = result.filter((note) => note.tags?.includes(tagFilter.value))
   }
   return result
+})
+
+watch(weekLength, () => {
+  weekOffset.value = 0
+})
+
+watch(weekDates, (dates) => {
+  if (weekLength.value === '1' && dates.length === 1) {
+    selectedDate.value = dates[0]!.date
+  }
 })
 
 function setNoteCardRef(noteId: number, el: InstanceType<typeof NoteCard> | null) {

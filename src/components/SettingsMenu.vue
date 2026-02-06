@@ -74,7 +74,7 @@ function selectTheme(name: ThemeName) {
   closeMenu()
 }
 
-function selectWeekLength(length: '5' | '7') {
+function selectWeekLength(length: '1' | '5' | '7') {
   setWeekLength(length)
   closeMenu()
 }
@@ -185,6 +185,18 @@ function selectWeekLength(length: '5' | '7') {
             backgroundColor: theme.surface0,
           }"
           >
+            <button
+              class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
+              :style="{
+              color: weekLength === '1' ? theme.lavender : theme.text,
+              backgroundColor: weekLength === '1' ? theme.surface1 : 'transparent',
+            }"
+              @click="selectWeekLength('1')"
+              @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
+              @mouseleave="($event.target as HTMLElement).style.backgroundColor = weekLength === '1' ? theme.surface1 : 'transparent'"
+            >
+              {{ weekLength === '1' ? '> ' : '  ' }}1 day
+            </button>
             <button
               class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
               :style="{
