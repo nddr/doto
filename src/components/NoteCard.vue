@@ -362,7 +362,7 @@ defineExpose({
           <div
             v-for="(todo, todoIndex) in note.todos"
             :key="todo.id"
-            class="group flex items-start gap-2 px-1 -mx-1 transition-colors"
+            class="group flex items-center gap-2 px-1 -mx-1 transition-colors"
             :style="{
               '--hover-bg': theme.surface1,
               opacity: draggedTodo?.noteId === note.id && draggedTodo?.todoIndex === todoIndex ? 0.5 : 1,
@@ -384,15 +384,38 @@ defineExpose({
             >
               ::
             </span>
-            <span
-              class="select-none cursor-pointer text-2xl flex items-center justify-center w-6 h-6"
-              :style="{
-                color: todo.status === 'completed' ? theme.green
-                  : todo.status === 'in-progress' ? theme.blue
-                  : theme.text
-              }"
+            <svg
+              class="select-none cursor-pointer shrink-0"
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
               @click="emit('toggle-todo', note.id, todo.id)"
-            >{{ todo.status === 'completed' ? '●' : todo.status === 'in-progress' ? '◐' : '○' }}</span>
+            >
+              <!-- Incomplete: empty circle -->
+              <circle
+                v-if="todo.status === 'incomplete'"
+                cx="9" cy="9" r="7"
+                fill="none"
+                :stroke="theme.text"
+                stroke-width="2"
+              />
+              <!-- In Progress: half-filled circle -->
+              <template v-else-if="todo.status === 'in-progress'">
+                <defs>
+                  <clipPath :id="`half-clip-${todo.id}`">
+                    <rect x="0" y="0" width="9" height="18" />
+                  </clipPath>
+                </defs>
+                <circle cx="9" cy="9" r="7" fill="none" :stroke="theme.blue" stroke-width="2" />
+                <circle cx="9" cy="9" r="7" :fill="theme.blue" :clip-path="`url(#half-clip-${todo.id})`" />
+              </template>
+              <!-- Completed: filled circle -->
+              <circle
+                v-else
+                cx="9" cy="9" r="8"
+                :fill="theme.green"
+              />
+            </svg>
             <input
               v-if="editingTodoId === todo.id"
               v-model="editingTodoTitle"
