@@ -353,7 +353,7 @@ export function useTodoList() {
       .map((t) => ({
         id: nextTodoId++,
         title: t.title,
-        status: 'incomplete' as TodoStatus,
+        status: t.status,
         createdAt: toLocalISOString(),
       }))
 
