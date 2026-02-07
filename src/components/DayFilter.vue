@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useTheme } from '@/composables/useTheme'
+import { themeColor } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 
 export interface WeekDay {
@@ -27,7 +27,6 @@ const emit = defineEmits<{
   'day-drop': [date: string]
 }>()
 
-const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 const isSingleDay = computed(() => weekLength.value === '1')
 
@@ -42,15 +41,8 @@ function handleDragOver(event: DragEvent) {
     :class="isSingleDay ? 'text-2xl mb-2 -mt-4' : 'gap-2 mb-4'"
   >
     <button
-      class="text-center cursor-pointer transition-colors"
-      :class="isSingleDay ? 'order-2 ml-3' : 'py-2 px-2 border'"
-      :style="{
-        backgroundColor: isSingleDay ? 'transparent' : theme.surface0,
-        borderColor: isSingleDay ? 'transparent' : theme.surface1,
-        color: theme.overlay0,
-      }"
-      @mouseenter="($event.currentTarget as HTMLElement).style.color = theme.lavender"
-      @mouseleave="($event.currentTarget as HTMLElement).style.color = theme.overlay0"
+      class="text-center cursor-pointer transition-colors text-overlay0 hover:text-lavender"
+      :class="isSingleDay ? 'order-2 ml-3' : 'py-2 px-2 border border-surface1 bg-surface0'"
       @click="emit('previous-week')"
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 4 7 12 15 20" /></svg>
@@ -61,9 +53,9 @@ function handleDragOver(event: DragEvent) {
       class="cursor-pointer transition-colors"
       :class="isSingleDay ? 'order-1 text-left' : 'flex-1 text-center py-2 px-1 border'"
       :style="{
-        backgroundColor: isSingleDay ? 'transparent' : (modelValue === day.date ? theme.surface1 : theme.surface0),
-        borderColor: isSingleDay ? 'transparent' : (dragOverDay === day.date ? theme.lavender : (modelValue === day.date ? theme.lavender : theme.surface1)),
-        color: modelValue === day.date ? theme.lavender : (day.date === todayDate ? theme.text : theme.overlay0),
+        backgroundColor: isSingleDay ? 'transparent' : (modelValue === day.date ? themeColor('surface1') : themeColor('surface0')),
+        borderColor: isSingleDay ? 'transparent' : (dragOverDay === day.date ? themeColor('lavender') : (modelValue === day.date ? themeColor('lavender') : themeColor('surface1'))),
+        color: modelValue === day.date ? themeColor('lavender') : (day.date === todayDate ? themeColor('text') : themeColor('overlay0')),
       }"
       @click="emit('update:modelValue', day.date)"
       @dragover="handleDragOver"
@@ -89,15 +81,8 @@ function handleDragOver(event: DragEvent) {
       </template>
     </button>
     <button
-      class="text-center cursor-pointer transition-colors"
-      :class="isSingleDay ? 'order-3 ml-2' : 'py-2 px-2 border'"
-      :style="{
-        backgroundColor: isSingleDay ? 'transparent' : theme.surface0,
-        borderColor: isSingleDay ? 'transparent' : theme.surface1,
-        color: theme.overlay0,
-      }"
-      @mouseenter="($event.currentTarget as HTMLElement).style.color = theme.lavender"
-      @mouseleave="($event.currentTarget as HTMLElement).style.color = theme.overlay0"
+      class="text-center cursor-pointer transition-colors text-overlay0 hover:text-lavender"
+      :class="isSingleDay ? 'order-3 ml-2' : 'py-2 px-2 border border-surface1 bg-surface0'"
       @click="emit('next-week')"
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 4 17 12 9 20" /></svg>

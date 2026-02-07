@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
-import { useTheme, type CatppuccinTheme } from '@/composables/useTheme'
+import { themeColor } from '@/composables/useTheme'
 import { useToast } from '@/composables/useToast'
 import { useTagStore } from '@/composables/useTagStore'
 import type { NoteType } from '@/composables/useTodoList'
@@ -38,7 +38,6 @@ const emit = defineEmits<{
   'todo-drop': [noteId: number, toIndex: number, event: DragEvent]
 }>()
 
-const { theme } = useTheme()
 const toast = useToast()
 const { tags: allTags, getTag } = useTagStore()
 
@@ -53,6 +52,13 @@ const noteTag = computed(() => {
   const tagId = props.note.tags?.[0]
   if (!tagId) return null
   return getTag(tagId) ?? null
+})
+
+const borderColorStyle = computed(() => {
+  if (props.isDragging) return 'white'
+  if (props.isDragOver) return themeColor('lavender')
+  if (noteTag.value) return themeColor(noteTag.value.color)
+  return themeColor('surface1')
 })
 
 // Track enter/leave balance to handle event bubbling
@@ -175,10 +181,9 @@ defineExpose({
 
 <template>
   <div
-    class="relative flex-1 min-w-[calc(25%-12px)] max-w-full border pt-8 transition-colors flex"
+    class="relative flex-1 min-w-[calc(25%-12px)] max-w-full border pt-8 transition-colors flex bg-surface0"
     :style="{
-      borderColor: isDragging ? 'white' : (isDragOver ? theme.lavender : (noteTag ? theme[noteTag.color as keyof CatppuccinTheme] : theme.surface1)),
-      backgroundColor: theme.surface0,
+      borderColor: borderColorStyle,
       opacity: isDragging ? 0.5 : (isOld ? 0.35 : 1),
       filter: isOld ? 'grayscale(0.6)' : 'none',
     }"
@@ -195,26 +200,17 @@ defineExpose({
       @dragend="emit('drag-end')"
     >
       <div class="flex flex-col gap-1">
-        <div
-          class="w-10 h-0.5 rounded"
-          :style="{ backgroundColor: theme.overlay0 }"
-        ></div>
-        <div
-          class="w-10 h-0.5 rounded"
-          :style="{ backgroundColor: theme.overlay0 }"
-        ></div>
+        <div class="w-10 h-0.5 rounded bg-overlay0"></div>
+        <div class="w-10 h-0.5 rounded bg-overlay0"></div>
       </div>
     </div>
 
     <!-- Menu Button -->
     <button
-      class="absolute top-3 right-4 flex items-center justify-center w-6 h-6 text-2xl cursor-pointer transition-colors"
-      :style="{ color: theme.overlay0 }"
+      class="absolute top-3 right-4 flex items-center justify-center w-6 h-6 text-2xl cursor-pointer transition-colors text-overlay0 hover:text-lavender"
       :popovertarget="`note-menu-${note.id}`"
       :aria-label="`Menu for ${note.name}`"
       @click="($event.target as HTMLElement).style.setProperty('anchor-name', '--note-menu')"
-      @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
-      @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
     >
       ⋮
     </button>
@@ -223,34 +219,23 @@ defineExpose({
     <div
       :id="`note-menu-${note.id}`"
       popover
-      class="note-menu-popover min-w-48 border shadow-lg"
-      :style="{
-        backgroundColor: theme.surface1,
-        borderColor: theme.surface2,
-      }"
+      class="note-menu-popover min-w-48 border shadow-lg bg-surface1 border-surface2"
     >
       <!-- Copy as Markdown -->
       <div
-        class="flex items-center px-4 py-2 cursor-pointer transition-colors"
-        @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface2"
-        @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
+        class="flex items-center px-4 py-2 cursor-pointer transition-colors hover:bg-surface2"
         @click="handleCopyAsMarkdown"
       >
-        <span :style="{ color: theme.text }">Copy as Markdown</span>
+        <span class="text-text">Copy as Markdown</span>
       </div>
       <!-- Separator -->
-      <div
-        class="border-b mx-2 my-1"
-        :style="{ borderColor: theme.surface2 }"
-      ></div>
+      <div class="border-b border-surface2 mx-2 my-1"></div>
       <!-- Delete -->
       <div
-        class="flex items-center px-4 py-2 cursor-pointer transition-colors"
-        @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface2"
-        @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
+        class="flex items-center px-4 py-2 cursor-pointer transition-colors hover:bg-surface2"
         @click="emit('remove-note', note.id)"
       >
-        <span :style="{ color: theme.red }">Delete</span>
+        <span class="text-red">Delete</span>
       </div>
     </div>
 
@@ -262,8 +247,7 @@ defineExpose({
           v-if="isEditingName"
           v-model="editingName"
           :data-note-input="note.id"
-          class="w-full bg-transparent outline-none border-b"
-          :style="{ color: theme.lavender, borderColor: theme.lavender }"
+          class="w-full bg-transparent outline-none border-b text-lavender border-lavender"
           :aria-label="`Edit name for ${note.name}`"
           @blur="saveNoteName"
           @keydown.enter="saveNoteName"
@@ -271,8 +255,7 @@ defineExpose({
         />
         <span
           v-else
-          class="flex items-center cursor-text"
-          :style="{ color: theme.lavender }"
+          class="flex items-center cursor-text text-lavender"
           tabindex="0"
           role="button"
           :aria-label="`Edit ${note.name}`"
@@ -289,11 +272,10 @@ defineExpose({
               @click.stop="showTagDropdown = false"
             />
             <button
-              class="h-8 px-2 text-sm flex items-center gap-1 border transition-colors cursor-pointer relative z-20"
+              class="h-8 px-2 text-sm flex items-center gap-1 border transition-colors cursor-pointer relative z-20 bg-surface1"
               :style="{
-                backgroundColor: theme.surface1,
-                borderColor: noteTag ? theme[noteTag.color as keyof CatppuccinTheme] : theme.surface2,
-                color: noteTag ? theme[noteTag.color as keyof CatppuccinTheme] : theme.overlay0,
+                borderColor: noteTag ? themeColor(noteTag.color) : themeColor('surface2'),
+                color: noteTag ? themeColor(noteTag.color) : themeColor('overlay0'),
               }"
               :title="`Tag: ${noteTag?.name || 'none'} (click to change)`"
               @click.stop="showTagDropdown = !showTagDropdown"
@@ -304,22 +286,13 @@ defineExpose({
             <!-- Tag dropdown -->
             <div
               v-if="showTagDropdown"
-              class="absolute top-full left-0 mt-1 border min-w-36 z-20"
-              :style="{
-                borderColor: theme.surface1,
-                backgroundColor: theme.surface0,
-              }"
+              class="absolute top-full left-0 mt-1 border min-w-36 z-20 border-surface1 bg-surface0"
             >
               <!-- None option -->
               <button
-                class="block w-full px-3 py-1 text-left text-sm cursor-pointer transition-colors whitespace-nowrap"
-                :style="{
-                  color: !noteTag ? theme.lavender : theme.text,
-                  backgroundColor: !noteTag ? theme.surface1 : 'transparent',
-                }"
+                class="block w-full px-3 py-1 text-left text-sm cursor-pointer transition-colors whitespace-nowrap hover:bg-surface1"
+                :class="!noteTag ? 'text-lavender bg-surface1' : 'text-text'"
                 @click.stop="emit('update-tag', note.id, null); showTagDropdown = false"
-                @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-                @mouseleave="($event.target as HTMLElement).style.backgroundColor = !noteTag ? theme.surface1 : 'transparent'"
               >
                 None
               </button>
@@ -328,18 +301,13 @@ defineExpose({
               <button
                 v-for="tag in allTags"
                 :key="tag.id"
-                class="flex items-center gap-2 w-full px-3 py-1 text-left text-sm cursor-pointer transition-colors whitespace-nowrap"
-                :style="{
-                  color: noteTag?.id === tag.id ? theme.lavender : theme.text,
-                  backgroundColor: noteTag?.id === tag.id ? theme.surface1 : 'transparent',
-                }"
+                class="flex items-center gap-2 w-full px-3 py-1 text-left text-sm cursor-pointer transition-colors whitespace-nowrap hover:bg-surface1"
+                :class="noteTag?.id === tag.id ? 'text-lavender bg-surface1' : 'text-text'"
                 @click.stop="emit('update-tag', note.id, tag.id); showTagDropdown = false"
-                @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-                @mouseleave="($event.target as HTMLElement).style.backgroundColor = noteTag?.id === tag.id ? theme.surface1 : 'transparent'"
               >
                 <span
                   class="w-3 h-3 rounded-full shrink-0"
-                  :style="{ backgroundColor: theme[tag.color as keyof CatppuccinTheme] }"
+                  :style="{ backgroundColor: themeColor(tag.color) }"
                 ></span>
                 {{ tag.name }}
               </button>
@@ -351,10 +319,7 @@ defineExpose({
       </div>
 
       <!-- Separator -->
-      <div
-        class="border-b mb-3"
-        :style="{ borderColor: theme.surface1 }"
-      ></div>
+      <div class="border-b border-surface1 mb-3"></div>
 
       <!-- Todo List Content -->
       <template v-if="note.type === 'task'">
@@ -362,22 +327,18 @@ defineExpose({
           <div
             v-for="(todo, todoIndex) in note.todos"
             :key="todo.id"
-            class="relative group flex items-center gap-2 px-1 -mx-1 transition-colors"
+            class="relative group flex items-center gap-2 px-1 -mx-1 transition-colors hover:bg-surface1"
             :style="{
-              '--hover-bg': theme.surface1,
               opacity: draggedTodo?.noteId === note.id && draggedTodo?.todoIndex === todoIndex ? 0.5 : 1,
-              borderTop: dragOverTodoIndex === todoIndex && dragOverNoteId === note.id ? `2px solid ${theme.lavender}` : '2px solid transparent',
+              borderTop: dragOverTodoIndex === todoIndex && dragOverNoteId === note.id ? `2px solid ${themeColor('lavender')}` : '2px solid transparent',
             }"
-            @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface1"
-            @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
             @dragover="handleDragOver"
             @dragenter="emit('todo-drag-enter', note.id, todoIndex)"
             @dragleave="emit('todo-drag-leave')"
             @drop="emit('todo-drop', note.id, todoIndex, $event)"
           >
             <span
-              class="cursor-grab select-none"
-              :style="{ color: theme.overlay0 }"
+              class="cursor-grab select-none text-overlay0"
               draggable="true"
               @dragstart="emit('todo-drag-start', note.id, todoIndex, $event)"
               @dragend="emit('todo-drag-end')"
@@ -396,7 +357,7 @@ defineExpose({
                 v-if="todo.status === 'incomplete'"
                 cx="9" cy="9" r="7"
                 fill="none"
-                :stroke="theme.text"
+                class="stroke-text"
                 stroke-width="2"
               />
               <!-- In Progress: half-filled circle -->
@@ -406,22 +367,21 @@ defineExpose({
                     <rect x="0" y="0" width="9" height="18" />
                   </clipPath>
                 </defs>
-                <circle cx="9" cy="9" r="7" fill="none" :stroke="theme.blue" stroke-width="2" />
-                <circle cx="9" cy="9" r="7" :fill="theme.blue" :clip-path="`url(#half-clip-${todo.id})`" />
+                <circle cx="9" cy="9" r="7" fill="none" class="stroke-blue" stroke-width="2" />
+                <circle cx="9" cy="9" r="7" class="fill-blue" :clip-path="`url(#half-clip-${todo.id})`" />
               </template>
               <!-- Completed: filled circle -->
               <circle
                 v-else
                 cx="9" cy="9" r="8"
-                :fill="theme.green"
+                class="fill-green"
               />
             </svg>
             <input
               v-if="editingTodoId === todo.id"
               v-model="editingTodoTitle"
               :data-todo-input="`${note.id}-${todo.id}`"
-              class="flex-1 min-w-0 bg-transparent outline-none border-b"
-              :style="{ color: theme.text, borderColor: theme.lavender }"
+              class="flex-1 min-w-0 bg-transparent outline-none border-b text-text border-lavender"
               :aria-label="`Edit todo: ${todo.title}`"
               @blur="saveTodoTitle(todo.id)"
               @keydown.enter="saveTodoTitle(todo.id)"
@@ -430,8 +390,10 @@ defineExpose({
             <span
               v-else
               class="flex-1 min-w-0 break-all cursor-text"
-              :class="{ 'line-through': todo.status === 'completed' }"
-              :style="{ color: todo.status === 'completed' ? theme.surface2 : theme.text }"
+              :class="[
+                { 'line-through': todo.status === 'completed' },
+                todo.status === 'completed' ? 'text-surface2' : 'text-text'
+              ]"
               @click="startEditingTodo(todo.id, todo.title)"
             >
               {{ todo.title }}
@@ -452,7 +414,7 @@ defineExpose({
             v-if="draggedTodo && draggedTodo.noteId !== note.id"
             class="h-8 transition-colors"
             :style="{
-              borderTop: dragOverNoteId === note.id && dragOverTodoIndex === note.todos.length ? `2px solid ${theme.lavender}` : '2px solid transparent',
+              borderTop: dragOverNoteId === note.id && dragOverTodoIndex === note.todos.length ? `2px solid ${themeColor('lavender')}` : '2px solid transparent',
             }"
             @dragover="handleDragOver"
             @dragenter="emit('todo-drag-enter', note.id, note.todos.length)"
@@ -467,11 +429,9 @@ defineExpose({
             type="text"
             placeholder="Add task..."
             :data-add-todo-input="note.id"
-            class="w-full pl-8 bg-transparent outline-none add-todo-input"
-            :style="{ color: theme.overlay0, '--placeholder-color': theme.subtext0 }"
+            class="w-full pl-8 bg-transparent outline-none add-todo-input text-overlay0 focus:text-text"
+            :style="{ '--placeholder-color': themeColor('subtext0') }"
             @keydown.enter="handleAddTodo(note.id, $event)"
-            @focus="($event.target as HTMLElement).style.color = theme.text"
-            @blur="handleAddTodo(note.id, $event); ($event.target as HTMLElement).style.color = theme.overlay0"
           />
         </div>
       </template>
@@ -485,12 +445,11 @@ defineExpose({
           :value="note.content"
           @input="emit('update-text-content', note.id, ($event.target as HTMLTextAreaElement).value)"
           placeholder="Write your note..."
-          class="w-full bg-transparent outline-none resize-none scrollbar-none [grid-area:1/1/2/2] field-sizing-content text-note-textarea"
+          class="w-full bg-transparent outline-none resize-none scrollbar-none [grid-area:1/1/2/2] field-sizing-content text-note-textarea text-text"
           :style="{
-            color: theme.text,
             backgroundImage: 'repeating-linear-gradient(transparent, transparent 1.4em, rgba(255, 255, 255, 0.05) 1.4em, rgba(255, 255, 255, 0.05) calc(1.4em + 1px))',
             lineHeight: '1.4em',
-            '--placeholder-color': theme.subtext0,
+            '--placeholder-color': themeColor('subtext0'),
           }"
         ></textarea>
       </div>
@@ -498,8 +457,7 @@ defineExpose({
       <!-- Created Date -->
       <span
         v-if="showCreatedAt && note.createdAt"
-        class="absolute bottom-2 right-4 text-xs"
-        :style="{ color: theme.overlay0 }"
+        class="absolute bottom-2 right-4 text-xs text-overlay0"
       >
         {{ note.createdAt.split('T')[0] }}
       </span>

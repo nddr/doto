@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useTodoList } from '@/composables/useTodoList'
-import { useTheme } from '@/composables/useTheme'
 import { useWeekLength } from '@/composables/useWeekLength'
 import { useShowCreatedAt } from '@/composables/useShowCreatedAt'
 import { useDialog } from '@/composables/useDialog'
@@ -14,7 +13,6 @@ import DayFilter from '@/components/DayFilter.vue'
 import NoteCard from '@/components/NoteCard.vue'
 
 const { notes, addTaskNote, addTextNote, renameNote, removeNote, moveNoteById, updateTextContent, updateNoteDate, updateNoteTag, addTodo, removeTodo, toggleTodo, renameTodo, moveTodo, moveTodoBetweenNotes, duplicateTaskNote, moveTodoToDate } = useTodoList()
-const { theme } = useTheme()
 const { weekLength } = useWeekLength()
 const { showCreatedAt } = useShowCreatedAt()
 const { open: openDialog, close: closeDialog } = useDialog()
@@ -352,23 +350,15 @@ onUnmounted(() => {
 
 <template>
   <main
-    class="w-screen min-h-screen p-6 pt-16 text-lg font-mono transition-colors duration-200"
-    :style="{ backgroundColor: theme.base }"
+    class="w-screen min-h-screen p-6 pt-16 text-lg font-mono transition-colors duration-200 bg-base"
   >
     <AppHeader />
 
     <!-- Month Header + Tag Filter -->
     <div class="flex items-center justify-between mt-4 mb-2">
-      <div
-        class="text-2xl"
-        :style="{ color: theme.text }"
-      >
+      <div class="text-2xl text-text">
         {{ currentMonth }}
-        <span
-          class="text-xl"
-          :style="{ color: theme.overlay0 }"
-          >{{ currentYear }}</span
-        >
+        <span class="text-xl text-overlay0">{{ currentYear }}</span>
       </div>
 
       <!-- Tag Filter -->
@@ -424,24 +414,17 @@ onUnmounted(() => {
 
       <!-- Add Note Buttons -->
       <div
-        class="flex-1 min-w-[calc(25%-12px)] max-w-full border border-dashed p-4 flex flex-col items-center justify-center gap-2 transition-colors"
-        :style="{ borderColor: theme.surface1 }"
+        class="flex-1 min-w-[calc(25%-12px)] max-w-full border border-dashed border-surface1 p-4 flex flex-col items-center justify-center gap-2 transition-colors"
       >
         <button
-          class="cursor-pointer transition-colors"
-          :style="{ color: theme.overlay0 }"
+          class="cursor-pointer transition-colors text-overlay0 hover:text-lavender"
           @click="handleAddTaskNote"
-          @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
-          @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
         >
           + New Todo
         </button>
         <button
-          class="cursor-pointer transition-colors"
-          :style="{ color: theme.overlay0 }"
+          class="cursor-pointer transition-colors text-overlay0 hover:text-lavender"
           @click="handleAddTextNote"
-          @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
-          @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
         >
           + New Note
         </button>

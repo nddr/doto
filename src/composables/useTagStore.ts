@@ -1,14 +1,14 @@
 import { ref, watch } from 'vue'
 
-import type { CatppuccinTheme } from '@/composables/useTheme'
+import type { ThemeColorName } from '@/composables/useTheme'
 
 export interface Tag {
   id: string
   name: string
-  color: keyof CatppuccinTheme
+  color: ThemeColorName
 }
 
-export const TAG_COLORS: (keyof CatppuccinTheme)[] = [
+export const TAG_COLORS: ThemeColorName[] = [
   'rosewater',
   'flamingo',
   'pink',
@@ -52,7 +52,7 @@ function generateId(): string {
 }
 
 export function useTagStore() {
-  function addTag(name: string, color: keyof CatppuccinTheme): Tag {
+  function addTag(name: string, color: ThemeColorName): Tag {
     const tag: Tag = { id: generateId(), name, color }
     tags.value.push(tag)
     return tag
@@ -65,7 +65,7 @@ export function useTagStore() {
     }
   }
 
-  function updateTag(tagId: string, updates: { name?: string; color?: keyof CatppuccinTheme }) {
+  function updateTag(tagId: string, updates: { name?: string; color?: ThemeColorName }) {
     const tag = tags.value.find((t) => t.id === tagId)
     if (tag) {
       if (updates.name !== undefined) tag.name = updates.name

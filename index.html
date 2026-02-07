@@ -2,6 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (function() {
+        var t = localStorage.getItem('doto-theme')
+        if (t && ['latte','frappe','macchiato','mocha'].includes(t)) {
+          document.documentElement.dataset.theme = t
+        } else {
+          document.documentElement.dataset.theme = 'mocha'
+        }
+      })()
+    </script>
     <link
       rel="icon"
       href="icons/favicon.png"

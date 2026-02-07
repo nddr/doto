@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useTheme, type CatppuccinTheme } from '@/composables/useTheme'
+import { themeColor, type ThemeColorName } from '@/composables/useTheme'
 import { useTagStore, TAG_COLORS, type Tag } from '@/composables/useTagStore'
 import { useTodoList } from '@/composables/useTodoList'
 
@@ -12,18 +12,17 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const { theme } = useTheme()
 const { tags, addTag, updateTag, removeTag } = useTagStore()
 const { removeTagFromAllNotes } = useTodoList()
 
 const showDropdown = ref(false)
 const showCreateForm = ref(false)
 const newTagName = ref('')
-const newTagColor = ref<keyof CatppuccinTheme>('green')
+const newTagColor = ref<ThemeColorName>('green')
 
 const editingTag = ref<Tag | null>(null)
 const editTagName = ref('')
-const editTagColor = ref<keyof CatppuccinTheme>('green')
+const editTagColor = ref<ThemeColorName>('green')
 
 function toggleDropdown() {
   showDropdown.value = !showDropdown.value
@@ -104,7 +103,7 @@ function getSelectedLabel(modelValue: string): string {
 function getSelectedColor(modelValue: string): string | null {
   if (modelValue === 'all') return null
   const tag = tags.value.find((t) => t.id === modelValue)
-  return tag ? theme.value[tag.color as keyof CatppuccinTheme] : null
+  return tag ? themeColor(tag.color) : null
 }
 </script>
 
@@ -119,27 +118,15 @@ function getSelectedColor(modelValue: string): string | null {
   <div class="flex items-center gap-2 relative z-20">
     <!-- + Tag button -->
     <button
-      class="px-3 py-1 border cursor-pointer transition-colors"
-      :style="{
-        borderColor: theme.surface1,
-        backgroundColor: theme.surface0,
-        color: theme.overlay0,
-      }"
+      class="px-3 py-1 border cursor-pointer transition-colors border-surface1 bg-surface0 text-overlay0 hover:text-lavender"
       @click="openCreateForm"
-      @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
-      @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
     >
       +
     </button>
 
     <!-- Dropdown trigger -->
     <button
-      class="flex items-center gap-2 px-2 py-1 border cursor-pointer transition-colors"
-      :style="{
-        borderColor: theme.surface1,
-        backgroundColor: theme.surface0,
-        color: theme.text,
-      }"
+      class="flex items-center gap-2 px-2 py-1 border cursor-pointer transition-colors border-surface1 bg-surface0 text-text"
       @click="toggleDropdown"
     >
       <span
@@ -153,22 +140,13 @@ function getSelectedColor(modelValue: string): string | null {
     <!-- Dropdown panel -->
     <div
       v-if="showDropdown"
-      class="absolute top-full right-0 mt-1 border min-w-40"
-      :style="{
-        borderColor: theme.surface1,
-        backgroundColor: theme.surface0,
-      }"
+      class="absolute top-full right-0 mt-1 border min-w-40 border-surface1 bg-surface0"
     >
       <!-- All option -->
       <button
-        class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap"
-        :style="{
-          color: modelValue === 'all' ? theme.lavender : theme.text,
-          backgroundColor: modelValue === 'all' ? theme.surface1 : 'transparent',
-        }"
+        class="block w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap hover:bg-surface1"
+        :class="modelValue === 'all' ? 'text-lavender bg-surface1' : 'text-text'"
         @click="selectTag('all')"
-        @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.surface1"
-        @mouseleave="($event.target as HTMLElement).style.backgroundColor = modelValue === 'all' ? theme.surface1 : 'transparent'"
       >
         All
       </button>
@@ -177,26 +155,18 @@ function getSelectedColor(modelValue: string): string | null {
       <div
         v-for="tag in tags"
         :key="tag.id"
-        class="flex items-center gap-2 w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap group"
-        :style="{
-          color: modelValue === tag.id ? theme.lavender : theme.text,
-          backgroundColor: modelValue === tag.id ? theme.surface1 : 'transparent',
-        }"
+        class="flex items-center gap-2 w-full px-3 py-1 text-left cursor-pointer transition-colors whitespace-nowrap group hover:bg-surface1"
+        :class="modelValue === tag.id ? 'text-lavender bg-surface1' : 'text-text'"
         @click="selectTag(tag.id)"
-        @mouseenter="($event.currentTarget as HTMLElement).style.backgroundColor = theme.surface1"
-        @mouseleave="($event.currentTarget as HTMLElement).style.backgroundColor = modelValue === tag.id ? theme.surface1 : 'transparent'"
       >
         <span
           class="w-3 h-3 shrink-0"
-          :style="{ backgroundColor: theme[tag.color as keyof CatppuccinTheme] }"
+          :style="{ backgroundColor: themeColor(tag.color) }"
         ></span>
         <span class="flex-1">{{ tag.name }}</span>
         <button
-          class="opacity-0 group-hover:opacity-100 transition-opacity ml-2 px-1 text-2xl hover:cursor-pointer"
-          :style="{ color: theme.text }"
+          class="opacity-0 group-hover:opacity-100 transition-opacity ml-2 px-1 text-2xl hover:cursor-pointer text-text hover:text-lavender"
           @click="openEditForm(tag, $event)"
-          @mouseenter="($event.target as HTMLElement).style.color = theme.lavender"
-          @mouseleave="($event.target as HTMLElement).style.color = theme.text"
         >
           ✏️
         </button>
@@ -206,21 +176,13 @@ function getSelectedColor(modelValue: string): string | null {
     <!-- Create tag form -->
     <div
       v-if="showCreateForm"
-      class="absolute top-full right-0 mt-1 border p-3 min-w-64"
-      :style="{
-        borderColor: theme.surface1,
-        backgroundColor: theme.surface0,
-      }"
+      class="absolute top-full right-0 mt-1 border p-3 min-w-64 border-surface1 bg-surface0"
     >
       <input
         v-model="newTagName"
         type="text"
         placeholder="Tag name"
-        class="w-full px-2 py-1 mb-4 bg-transparent border outline-none"
-        :style="{
-          borderColor: theme.surface2,
-          color: theme.text,
-        }"
+        class="w-full px-2 py-1 mb-4 bg-transparent border outline-none border-surface2 text-text"
         @keydown.enter="handleCreateTag"
         @keydown.escape="cancelCreate"
       />
@@ -232,9 +194,9 @@ function getSelectedColor(modelValue: string): string | null {
           :key="color"
           class="w-6 h-6 cursor-pointer transition-transform"
           :style="{
-            backgroundColor: theme[color as keyof CatppuccinTheme],
+            backgroundColor: themeColor(color),
             transform: newTagColor === color ? 'scale(1.25)' : 'scale(1)',
-            outline: newTagColor === color ? `2px solid ${theme.text}` : 'none',
+            outline: newTagColor === color ? `2px solid ${themeColor('text')}` : 'none',
             outlineOffset: '1px',
           }"
           @click="newTagColor = color"
@@ -243,11 +205,7 @@ function getSelectedColor(modelValue: string): string | null {
 
       <div class="flex gap-2 justify-end">
         <button
-          class="px-2 py-1 border cursor-pointer transition-colors"
-          :style="{
-            borderColor: theme.surface2,
-            color: theme.text,
-          }"
+          class="px-2 py-1 border cursor-pointer transition-colors border-surface2 text-text"
           @click="handleCreateTag"
         >
           Create
@@ -258,21 +216,13 @@ function getSelectedColor(modelValue: string): string | null {
     <!-- Edit tag form -->
     <div
       v-if="editingTag"
-      class="absolute top-full right-0 mt-1 border p-3 min-w-64"
-      :style="{
-        borderColor: theme.surface1,
-        backgroundColor: theme.surface0,
-      }"
+      class="absolute top-full right-0 mt-1 border p-3 min-w-64 border-surface1 bg-surface0"
     >
       <input
         v-model="editTagName"
         type="text"
         placeholder="Tag name"
-        class="w-full px-2 py-1 mb-4 bg-transparent border outline-none"
-        :style="{
-          borderColor: theme.surface2,
-          color: theme.text,
-        }"
+        class="w-full px-2 py-1 mb-4 bg-transparent border outline-none border-surface2 text-text"
         @keydown.enter="handleUpdateTag"
         @keydown.escape="cancelEdit"
       />
@@ -284,9 +234,9 @@ function getSelectedColor(modelValue: string): string | null {
           :key="color"
           class="w-6 h-6 cursor-pointer transition-transform"
           :style="{
-            backgroundColor: theme[color as keyof CatppuccinTheme],
+            backgroundColor: themeColor(color),
             transform: editTagColor === color ? 'scale(1.25)' : 'scale(1)',
-            outline: editTagColor === color ? `2px solid ${theme.text}` : 'none',
+            outline: editTagColor === color ? `2px solid ${themeColor('text')}` : 'none',
             outlineOffset: '1px',
           }"
           @click="editTagColor = color"
@@ -295,23 +245,13 @@ function getSelectedColor(modelValue: string): string | null {
 
       <div class="flex gap-2 justify-between">
         <button
-          class="px-2 py-1 border cursor-pointer transition-colors"
-          :style="{
-            borderColor: theme.red,
-            color: theme.red,
-          }"
+          class="px-2 py-1 border cursor-pointer transition-colors border-red text-red hover:bg-red hover:text-base"
           @click="handleDeleteTag"
-          @mouseenter="($event.target as HTMLElement).style.backgroundColor = theme.red; ($event.target as HTMLElement).style.color = theme.base"
-          @mouseleave="($event.target as HTMLElement).style.backgroundColor = 'transparent'; ($event.target as HTMLElement).style.color = theme.red"
         >
           Delete
         </button>
         <button
-          class="px-2 py-1 border cursor-pointer transition-colors"
-          :style="{
-            borderColor: theme.surface2,
-            color: theme.text,
-          }"
+          class="px-2 py-1 border cursor-pointer transition-colors border-surface2 text-text"
           @click="handleUpdateTag"
         >
           Save

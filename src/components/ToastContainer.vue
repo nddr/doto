@@ -1,17 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useToast, type Toast } from '@/composables/useToast'
-import { useTheme } from '@/composables/useTheme'
+import { themeColor } from '@/composables/useTheme'
 
 const { toasts, dismiss } = useToast()
-const { theme } = useTheme()
 
-const typeColors = computed(() => ({
-  success: theme.value.green,
-  error: theme.value.red,
-  info: theme.value.blue,
-  warning: theme.value.yellow,
-}))
+const typeColors: Record<Toast['type'], string> = {
+  success: themeColor('green'),
+  error: themeColor('red'),
+  info: themeColor('blue'),
+  warning: themeColor('yellow'),
+}
 
 const typeIcons: Record<Toast['type'], string> = {
   success: '✓',
@@ -27,39 +25,26 @@ const typeIcons: Record<Toast['type'], string> = {
       <div
         v-for="toast in toasts"
         :key="toast.id"
-        class="relative flex flex-col border shadow-lg overflow-hidden"
-        :style="{
-          backgroundColor: theme.surface1,
-          borderColor: theme.surface2,
-        }"
+        class="relative flex flex-col border shadow-lg overflow-hidden bg-surface1 border-surface2"
       >
         <div class="flex items-start gap-3 px-4 py-3">
           <!-- Icon -->
           <span
-            class="flex items-center justify-center w-5 h-5 text-sm font-bold rounded-full shrink-0"
-            :style="{
-              backgroundColor: typeColors[toast.type],
-              color: theme.crust,
-            }"
+            class="flex items-center justify-center w-5 h-5 text-sm font-bold rounded-full shrink-0 text-crust"
+            :style="{ backgroundColor: typeColors[toast.type] }"
           >
             {{ typeIcons[toast.type] }}
           </span>
 
           <!-- Message -->
-          <span
-            class="flex-1 text-sm"
-            :style="{ color: theme.text }"
-          >
+          <span class="flex-1 text-sm text-text">
             {{ toast.message }}
           </span>
 
           <!-- Dismiss button -->
           <button
-            class="shrink-0 cursor-pointer transition-colors"
-            :style="{ color: theme.overlay0 }"
+            class="shrink-0 cursor-pointer transition-colors text-overlay0 hover:text-text"
             @click="dismiss(toast.id)"
-            @mouseenter="($event.target as HTMLElement).style.color = theme.text"
-            @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
             aria-label="Dismiss"
           >
             ✕
