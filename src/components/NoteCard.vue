@@ -437,7 +437,7 @@ defineExpose({
               {{ todo.title }}
             </span>
             <button
-              class="absolute top-0 right-0 h-8 w-8 bg-red-300 text-gray-600 cursor-pointer md:hidden md:group-hover:flex items-center justify-center"
+              class="absolute top-0 right-0 flex items-center justify-center h-8 w-8 md:bg-red-300 text-gray-600 cursor-pointer md:hidden md:group-hover:flex"
               @click="emit('remove-todo', note.id, todo.id)"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
