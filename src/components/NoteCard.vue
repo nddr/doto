@@ -362,7 +362,7 @@ defineExpose({
           <div
             v-for="(todo, todoIndex) in note.todos"
             :key="todo.id"
-            class="group flex items-center gap-2 px-1 -mx-1 transition-colors"
+            class="relative group flex items-center gap-2 px-1 -mx-1 transition-colors"
             :style="{
               '--hover-bg': theme.surface1,
               opacity: draggedTodo?.noteId === note.id && draggedTodo?.todoIndex === todoIndex ? 0.5 : 1,
@@ -437,13 +437,13 @@ defineExpose({
               {{ todo.title }}
             </span>
             <button
-              class="cursor-pointer md:hidden md:group-hover:block"
-              :style="{ color: theme.overlay0 }"
+              class="absolute top-0 right-0 h-8 w-8 bg-red-300 text-gray-600 cursor-pointer md:hidden md:group-hover:flex items-center justify-center"
               @click="emit('remove-todo', note.id, todo.id)"
-              @mouseenter="($event.target as HTMLElement).style.color = theme.red"
-              @mouseleave="($event.target as HTMLElement).style.color = theme.overlay0"
             >
-              [x]
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
 
