@@ -62,3 +62,38 @@ Defined in `env.d.ts`, configured in `.env`:
 - `VITE_API_BASE_URL` - API endpoint
 - `VITE_CLASSIC_APP_URL` - Classic app URL
 - `VITE_APP_ENV` - Environment mode (development | staging | production)
+
+## Code Generation
+- Do not build or test code after generation.
+
+## Vue Directive Patterns
+
+**Keep event handlers declarative - extract logic into methods**
+
+❌ **Avoid:**
+```vue
+  <button @click="count++">Increment</button>
+  <input @input="user.name = $event.target.value">
+```
+
+✅ **Prefer:**
+```vue
+<button @click="incrementCount">Increment</button>
+<input @input="updateUserName">
+```
+
+```typescript
+  function incrementCount() {
+    count.value++
+  }
+
+  function updateUserName(event: Event) {
+    user.value.name = (event.target as HTMLInputElement).value
+  }
+```
+
+**Why:** Keeps templates readable, makes logic testable, and enables better type safety.
+
+## Icons
+
+**Use SVG images instead of ASCII characters for icons**
